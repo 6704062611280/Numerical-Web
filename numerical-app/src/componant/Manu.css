@@ -1,0 +1,33 @@
+.Manu {
+    justify-items: center;
+    margin: 20px;
+    border: 1px solid black;
+    border-radius: 25px;
+    padding: 20px;
+    
+    
+}
+
+.select-manu {
+    margin: 10px;
+    padding: 10px;
+
+    justify-content: center;
+}
+
+section {
+    border-radius: 5px;
+    border: 1px solid black;
+}
+#op {
+    margin-left: 10px;
+    padding: 5px;
+    border-radius: 5px;
+
+}
+
+.select-problem, .select-solution {
+    margin: 10px;
+    padding: 10px;
+    display: inline-block;
+}
