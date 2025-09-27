@@ -1,11 +1,8 @@
 import BackButton from "../../BackButton";
-export default function JacobiIterationPage() {
+export default function NewtonRaphsonPage() {
     return (
         <div>
             <BackButton/>
-            <div>
-                <h1>Jaco</h1>
-            </div>
         </div>
     );
 }

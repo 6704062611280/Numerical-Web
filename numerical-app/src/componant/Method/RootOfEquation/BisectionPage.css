@@ -1,0 +1,11 @@
+.Bisec-page{
+    margin: 0 auto;
+}
+.Bisec-container{
+    margin: 0px auto;
+    width: 800px;
+    min-height: 100vh;
+    justify-items: center;
+    align-items: center;
+    outline: 1px solid red;
+}

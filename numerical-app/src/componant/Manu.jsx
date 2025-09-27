@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./Manu.css";
 import { useNavigate } from "react-router-dom";
 
@@ -45,7 +45,12 @@ export default function Manu() {
 
     const navigate = useNavigate();
     
-
+    useEffect(()=>{
+        if(solution){
+            const path = (`${solution}`);
+            navigate(path);
+        }
+    },[solution, navigate]);
 
    
     return(
@@ -57,7 +62,7 @@ export default function Manu() {
                 <div className="select-problem">
                     <label id="">Type of Problem: </label>
                     <select value={problem} onChange={(e) => setProblem(e.target.value)}>
-                        <option value="">-- เลือกปัญหา --</option>
+                        <option value="" disabled hidden>-- เลือกปัญหา --</option>
                         {Object.keys(menu).map((cat) => (
                             <option key={cat} value={cat}>
                                 {cat}
@@ -71,7 +76,7 @@ export default function Manu() {
                     <div className="select-solution">
                         <label>Solution: </label>
                         <select value={solution} onChange={(e) => setSolution(e.target.value)}>
-                            <option value="">-- เลือกวิธี --</option>
+                            <option value="" disabled hidden>-- เลือกวิธี --</option>
                             {menu[problem].map((m) => (
                                 <option key={m} value={m}>
                                     {m}
@@ -79,9 +84,6 @@ export default function Manu() {
                             ))}
                         </select>
                     </div>
-                )}
-                {solution && ( 
-                    navigate(`/${solution}`)
                 )}
             </div>
         </div>
