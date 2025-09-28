@@ -7,7 +7,7 @@ export default function BisectionPage() {
   const [fn, setFn] = useState("x^3 - x - 2");
   const [a, setA] = useState(1);
   const [b, setB] = useState(2);
-  const [tol, setTol] = useState(1e-7);
+  const [error, setError] = useState(1e-7);
   const [root, setRoot] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
   const [iteration, setIteration] = useState(0);
@@ -23,11 +23,15 @@ export default function BisectionPage() {
 
     let left = Number(a);
     let right = Number(b);
-    let tolerance = Number(tol);
+    let ErrorCheck = Number(error);
     let f;
     let mid;
     let count = Number(iteration);
 
+    if( isNaN(left) || isNaN(right) || isNaN(ErrorCheck) || ErrorCheck <=0){
+      setErrorMsg("กรุณาใส่ค่า a, b, Error ให้ถูกต้อง (Error ต้องมากกว่า 0)")
+      return;
+    }
     try {
       f = complieFn(fn);
     } catch (e) {
@@ -35,7 +39,7 @@ export default function BisectionPage() {
       return;
     }
 
-    while ((right - left) / 2 > tolerance) {
+    while ((right - left) / 2 > ErrorCheck) {
       mid = (left + right) / 2;
       if (f(mid) === 0) {
         break;
@@ -72,14 +76,14 @@ export default function BisectionPage() {
             <input value={b} onChange={(e) => setB(e.target.value)} />
           </div>
           <div>
-            <label>Tol:</label>
-            <input value={tol} onChange={(e) => setTol(e.target.value)} />
+            <label>er:</label>
+            <input value={error} onChange={(e) => setError(e.target.value)} />
           </div>
           <button onClick={bisectionMethod}>Calculate</button>
 
           <div>
             {errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}
-            {root !== null && (
+            {root && (
               <p>
                 Root: {root} Iteration: {iteration}
               </p>
