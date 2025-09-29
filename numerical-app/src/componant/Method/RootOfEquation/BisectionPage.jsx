@@ -32,6 +32,7 @@ export default function BisectionPage() {
       setErrorMsg("กรุณาใส่ค่า a, b, Error ให้ถูกต้อง (Error ต้องมากกว่า 0)")
       return;
     }
+    
     try {
       f = complieFn(fn);
     } catch (e) {
