@@ -1,8 +1,93 @@
-.container{
+html,
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+
+}
+
+.math-text{
+    width: 1000px;
+    border: 2px solid black;
+    border-radius: 10px;
+}
+
+.input-text{
     margin: 0px auto;
-    width: 800px;
+    width: 1000px;
+    padding: 30px 0px 30px 0px;
+    border-radius: 10px;
+    justify-items: center;
+}
+.input-text input{
+    outline: none;
+    
+    padding : 10px;
+    border-Radius: 10px;
+    border : 1px solid black;
+}
+
+.input-text label{
+    margin-right: 10px;
+}
+
+
+.input-text div{
+    margin-bottom: 10px;
+}
+.page {
+    background-color: #effbff;
     min-height: 100vh;
+}
+
+.container {
+    margin: 0px auto;
+    margin-bottom: 10px;
+    width: 1200px;
+    height: 100%;
+
+    background-color: rgb(255, 255, 255);
     justify-items: center;
     align-items: center;
-    outline: 1px solid red;
+    border-radius: 10px;
+    box-shadow: 10px 10px 15px rgba(0, 0, 0, 0.2);
+    /* outline: 1px solid red; */
+}
+
+.nice-table {
+    margin: 0px auto;
+    margin-bottom: 10px;
+    width: 100%;
+    border-collapse: collapse;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border-radius: 8px;
+    overflow: hidden;
+    /* ให้ border-radius ทำงาน */
+}
+
+.nice-table thead {
+    background: linear-gradient(90deg, #4f46e5, #06b6d4);
+    color: white;
+    text-align: left;
+    font-weight: 600;
+}
+
+.nice-table th,
+.nice-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.nice-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.nice-table tbody tr:hover {
+    background: rgba(6, 182, 212, 0.06);
+}
+
+.nice-table th:first-child,
+.nice-table td:first-child {
+    width: 60px;
 }

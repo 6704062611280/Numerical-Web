@@ -16,7 +16,7 @@ export default function BackButton () {
     >
       <img
         src="/src/assets/back.svg"  // ใส่ path รูปภาพของคุณ
-        style={{ width: 30, height: 30 }}
+        style={{ width: 50, height: 50 }}
       />
     </button>
   );
