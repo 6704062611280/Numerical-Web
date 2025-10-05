@@ -1,13 +1,13 @@
 import { useState } from "react";
 import BackButton from "../../BackButton";
-import { parse } from "mathjs";
+import { parse, to } from "mathjs";
 import "./GraphicalPage.css";
 
 export default function GraphicalPage() {
   const [fn, setFn] = useState("x^3-4x+1");
   const [a, setA] = useState("-3");
   const [b, setB] = useState("3");
-  const [error, setError] = useState("0.00001");
+  const [error, setError] = useState("0.000001");
   const [errorMessage, setErrorMessage] = useState("");
   const [root, setRoot] = useState([]);
   const [fxRoot, setFxRoot] = useState([]);
@@ -48,30 +48,88 @@ export default function GraphicalPage() {
       setErrorMessage("Error: Invalid function");
       return;
     }
-
+    let count = 0;
     const foundRoots = [];
     const foundFn = [];
-    for (let x = left; x <= right; x += tolerance) {
+    let x = left;
+    const maxCount = 10;
+    const minTolerance = 1e-20;
+    while (x <= right) {
+      
       let f1 = f(x);
       let f2 = f(x + tolerance);
-
-      // foundRoots.push(x);    //เหมือนรุ่นพี่
-      // foundFn.push(f1);
-      if (f1 * f2 < 0) {
-        foundRoots.push(x);
-        foundFn.push(f1); 
-        // foundRoots.push(x + tolerance); //เหมือนรุ่นพี่
-        // foundFn.push(f2);
-        tolerance = tolerance / 10;
-        console.log("Found");
-      }
       if (Math.abs(f1) <= CheckError) {
         break;
       }
+      foundRoots.push(x); //เหมือนรุ่นพี่
+      foundFn.push(f1);
+      console.log(x,x +tolerance," ",f1,f2);
+      if (f1 * f2 < 0) {
+        // foundRoots.push(x);
+        // foundFn.push(f1);
+        foundRoots.push(x + tolerance);
+        foundFn.push(f2);
+        tolerance = tolerance * 0.1;
+        x=x+tolerance; //x ต่อไป
+        console.log("Found")
+        count = 0;
+        continue;
+      }
+      console.log("tol = ",tolerance);
+      
+
+      
+      count += 1;
+      console.log("Count =", count);
+      if (count >= maxCount) {
+        if (tolerance > minTolerance) {
+          
+          console.log("x = ",x)
+          x -= tolerance * count; // ถอยกลับเพื่อละเอียดขึ้น
+          tolerance *= 0.1;
+          console.log("tolerance*count = ",tolerance*count)
+          count = 0;
+          continue;
+        } else {
+          break; // tolerance เล็กสุดแล้ว หยุดเลย
+        }
+      }
+      x=x+tolerance; // x ต่อไป
     }
+
+    // for (let x = left; x <= right; x += tolerance) {
+    //   let f1 = f(x);
+    //   let f2 = f(x + tolerance);
+
+    //   console.log(x,x +tolerance," ",f1,f2);
+    //   // foundRoots.push(x);    //เหมือนรุ่นพี่
+    //   // foundFn.push(f1);
+    //   if (f1 * f2 < 0) {
+    //     foundRoots.push(x);
+    //     foundFn.push(f1);
+    //     foundRoots.push(x + tolerance); //เหมือนรุ่นพี่
+    //     foundFn.push(f2);
+    //     tolerance = tolerance / 10;
+    //     count=0;
+    //     console.log("Found");
+    //   }
+    //   if(count>9){
+    //     tolerance = tolerance / 10;
+    //     x=foundRoots[foundRoots.length-1];
+    //     count=0;
+    //   }
+    //   if (Math.abs(f1) <= CheckError) {
+    //     break;
+    //   }
+    //   count+=1;
+    // }
     setRoot(foundRoots);
     setFxRoot(foundFn);
-    if (foundRoots == [] || foundFn == []) {
+    console.log("fxRoot[13] =", fxRoot[13]);
+    console.log("f(-2.11491	) =", f(-2.11491));
+    
+
+    if (foundRoots.length === 0 || foundFn.length === 0) {
       return setErrorMessage("ไม่พบรากในช่วง [a,b]");
     }
   }
