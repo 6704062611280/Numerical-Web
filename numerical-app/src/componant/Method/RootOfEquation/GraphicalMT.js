@@ -11,11 +11,17 @@ export function GraphicalMethod({ fn, a, b, error }) {
   let left = Number(a);
   let right = Number(b);
   let CheckError = Number(error);
-  let tolerance = Math.pow(10, Math.floor(Math.log10(Math.abs(left)))-1);
-  // console.log(tolerance);
-  // if (isNull(left) || isNull(right) || isNull(tolerance) || tolerance <= 0) {
-  //   return { error: "กรุณาใส่ค่า a, b, tolerance ให้ถูกต้อง (tolerance ต้องมากกว่า 0)" };
-  // }
+  let tolerance;
+  if(left===0){
+    // tolerance = Math.pow(10, Math.floor(Math.log10(Math.abs(left)))-1);
+    tolerance = 1;
+  }else{
+    tolerance = Math.pow(10, Math.floor(Math.log10(Math.abs(left)))-1);
+    // tolerance = 1;
+  }
+  console.log(left);
+  console.log(right);
+  console.log("tol = ",tolerance);
   if (isNaN(left) || isNaN(right) || isNaN(tolerance) || tolerance <= 0) {
     return { error: "กรุณาใส่ค่า a, b, tolerance ให้ถูกต้อง (tolerance ต้องมากกว่า 0)" };
   }
@@ -42,8 +48,8 @@ export function GraphicalMethod({ fn, a, b, error }) {
     foundRoots.push(x);
     foundFn.push(f1);
     if (Math.abs(f1) <= CheckError) break;
-    // console.log("x1 = ",x,"x2 = ",x+tolerance);
-    // console.log("F1(x) = ",f(x),"F2(x)",f(x+tolerance));
+    console.log("x1 = ",x,"x2 = ",x+tolerance);
+    console.log("F1(x) = ",f(x),"F2(x)",f(x+tolerance));
 
     if (f1 * f2 < 0) {
       foundRoots.push(x + tolerance);
@@ -51,7 +57,7 @@ export function GraphicalMethod({ fn, a, b, error }) {
       tolerance *= 0.1;
       x += tolerance;
       count = 0;
-      // console.log("Found");
+      console.log("Found");
       continue;
     }
 
@@ -67,10 +73,12 @@ export function GraphicalMethod({ fn, a, b, error }) {
         break;
       }
     }
-    
+    // if(count>=100000){
+    //   return;
+    // }
     x += tolerance;
   }
-
+  console.log(count);
   if (foundRoots.length === 0 || foundFn.length === 0) {
     return { error: "ไม่พบรากในช่วง [a,b]" };
   }

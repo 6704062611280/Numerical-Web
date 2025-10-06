@@ -7,14 +7,15 @@ import { BlockMath } from "react-katex";
 import "katex/dist/katex.min.css";
 
 export default function GraphicalPage() {
+  //ตัวแปร
   const [fn, setFn] = useState("x^3-4x+1");
-  const [a, setA] = useState("-3");
-  const [b, setB] = useState("3");
+  const [a, setA] = useState("-1000");
+  const [b, setB] = useState("1000");
   const [error, setError] = useState("0.000001");
   const [errorMessage, setErrorMessage] = useState("");
   const [root, setRoot] = useState([]);
   const [fxRoot, setFxRoot] = useState([]);
-
+  //function
   function Graphical() {
     setRoot([]);
     setFxRoot([]);
@@ -25,8 +26,9 @@ export default function GraphicalPage() {
     setErrorMessage("กรุณากรอกค่า f(x), X Start, X End, และ Error ให้ครบ");
     return;
   }
+    //เรียก function
     const result = GraphicalMethod({ fn, a, b, error });
-
+    //set errorMsg
     if (result.error) {
       setErrorMessage(result.error);
     } else {
@@ -34,11 +36,11 @@ export default function GraphicalPage() {
       setFxRoot(result.fx);
     }
   }
-
+  //show Math text
   function formatToLaTeX(equation) {
     return equation.replace(/\^(\d+)/g, "^{$1}");
   }
-
+  //เรียงdata
   const sortedData = root
     .map((val, i) => ({ x: val, y: fxRoot[i] }))
     .sort((a, b) => a.x - b.x); // เรียงจากน้อยไปมาก
@@ -55,6 +57,7 @@ export default function GraphicalPage() {
           <h1 className="math-text">
             <BlockMath math={`f(x) = ${formatToLaTeX(fn)}`} />
           </h1>
+          {/* input */}
           <div className="input-text">
             <div>
               <label htmlFor="fn">f(x)</label>
@@ -98,6 +101,7 @@ export default function GraphicalPage() {
             </div>
           </div>
           {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
+          {/* plot */}
           <Plot
             data={[
               {
@@ -121,6 +125,7 @@ export default function GraphicalPage() {
               },
             }}
           />
+          {/* table */}
           <table
             className="nice-table"
             border="1"
