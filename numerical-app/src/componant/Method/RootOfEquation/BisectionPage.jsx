@@ -1,97 +1,119 @@
-import { useState } from "react";
-import { count, parse } from "mathjs";
+import React, { Component } from "react";
+import { parse } from "mathjs";
 import BackButton from "../../BackButton";
 import "./BisectionPage.css";
 
-export default function BisectionPage() {
-  const [fn, setFn] = useState("x^3 - x - 2");
-  const [a, setA] = useState(1);
-  const [b, setB] = useState(2);
-  const [error, setError] = useState(1e-7);
-  const [root, setRoot] = useState(null);
-  const [errorMsg, setErrorMsg] = useState("");
-  const [iteration, setIteration] = useState(0);
+class BisectionPage extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      fn: "x^3-x-2",
+      a: 1,
+      b: 2,
+      error: 1e-7,
+      root: null,
+      errorMsg: "",
+      iteration: 0,
+    };
+  }
 
-  function complieFn(text) {
+  compileFn(text) {
     const node = parse(text);
     return (x) => node.evaluate({ x });
   }
 
-  function bisectionMethod() {
-    setErrorMsg("");
-    setRoot(null);
+  bisectionMethod = () => {
+    this.setState({ errorMsg: "", root: null });
 
-    let left = Number(a);
-    let right = Number(b);
-    let ErrorCheck = Number(error);
+    let left = Number(this.state.a);
+    let right = Number(this.state.b);
+    let errorVal = Number(this.state.error);
     let f;
     let mid;
-    let count = Number(iteration);
+    let count = 0;
 
-    if( isNaN(left) || isNaN(right) || isNaN(ErrorCheck) || ErrorCheck <=0){
-      setErrorMsg("กรุณาใส่ค่า a, b, Error ให้ถูกต้อง (Error ต้องมากกว่า 0)")
+    if (isNaN(left) || isNaN(right) || isNaN(errorVal) || errorVal <= 0) {
+      this.setState({
+        errorMsg: "กรุณาใส่ค่า a, b, Error ให้ถูกต้อง (Error ต้องมากกว่า 0)",
+      });
       return;
     }
-    
+
     try {
-      f = complieFn(fn);
+      f = this.compileFn(this.state.fn);
     } catch (e) {
-      setErrorMsg("Error: Invalid function");
+      this.setState({ errorMsg: "Error: Invalid function" });
       return;
     }
 
-    while ((right - left) / 2 > ErrorCheck) {
+    while ((right - left) / 2 > errorVal) {
       mid = (left + right) / 2;
-      if (f(mid) === 0) {
-        break;
-      }
-      if (f(left) * f(mid) < 0) {
-        right = mid;
-      } else {
-        left = mid;
-      }
-      count += 1;
+      if (f(mid) === 0) break;
+      if (f(left) * f(mid) < 0) right = mid;
+      else left = mid;
+      count++;
     }
-    setRoot(mid);
-    setIteration(count);
-  }
 
-  return (
-    <div className="Bisec-page">
-      <div>
+    this.setState({ root: mid, iteration: count });
+  };
+
+  render() {
+    return (
+      <div className="Bisec-page">
         <BackButton />
-      </div>
-      <div className="Bisec-container">
-        <h1>Bisection</h1>
-        <div>
-          <div>
-            <label>f(x):</label>
-            <input value={fn} onChange={(e) => setFn(e.target.value)} />
-          </div>
-          <div>
-            <label>a:</label>
-            <input value={a} onChange={(e) => setA(e.target.value)} />
-          </div>
-          <div>
-            <label>b:</label>
-            <input value={b} onChange={(e) => setB(e.target.value)} />
-          </div>
-          <div>
-            <label>er:</label>
-            <input value={error} onChange={(e) => setError(e.target.value)} />
-          </div>
-          <button onClick={bisectionMethod}>Calculate</button>
+        <div className="Bisec-container">
+          <h1>Bisection</h1>
 
           <div>
-            {errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}
-            {root && (
-              <p>
-                Root: {root} Iteration: {iteration}
-              </p>
-            )}
+            <div>
+              <label>f(x): </label>
+              <input
+                value={this.state.fn}
+                onChange={(e) => this.setState({ fn: e.target.value })}
+              />
+            </div>
+
+            <div>
+              <label>a: </label>
+              <input
+                value={this.state.a}
+                onChange={(e) => this.setState({ a: e.target.value })}
+              />
+            </div>
+
+            <div>
+              <label>b: </label>
+              <input
+                value={this.state.b}
+                onChange={(e) => this.setState({ b: e.target.value })}
+              />
+            </div>
+
+            <div>
+              <label>er: </label>
+              <input
+                value={this.state.error}
+                onChange={(e) => this.setState({ error: e.target.value })}
+              />
+            </div>
+
+            <button onClick={this.bisectionMethod}>Calculate</button>
+
+            <div>
+              {this.state.errorMsg && (
+                <p style={{ color: "red" }}>{this.state.errorMsg}</p>
+              )}
+              {this.state.root && (
+                <p>
+                  Root: {this.state.root} Iteration: {this.state.iteration}
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  }
 }
+
+export default BisectionPage;
