@@ -2,62 +2,25 @@ import React, { Component } from "react";
 import { parse } from "mathjs";
 import BackButton from "../../BackButton";
 import "./BisectionPage.css";
-
+import BisectionMT from "./BisectionMT";
+import Plot from "react-plotly.js";
 class BisectionPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      fn: "x^3-x-2",
-      a: 1,
-      b: 2,
-      error: 1e-7,
-      root: null,
+      fn: "x^3-4x+1",
+      a: -3,
+      b: 3,
+      error: 0.000001,
+      root: [],
+      fxRoot: [],
       errorMsg: "",
       iteration: 0,
     };
   }
 
-  compileFn(text) {
-    const node = parse(text);
-    return (x) => node.evaluate({ x });
-  }
-
-  bisectionMethod = () => {
-    this.setState({ errorMsg: "", root: null });
-
-    let left = Number(this.state.a);
-    let right = Number(this.state.b);
-    let errorVal = Number(this.state.error);
-    let f;
-    let mid;
-    let count = 0;
-
-    if (isNaN(left) || isNaN(right) || isNaN(errorVal) || errorVal <= 0) {
-      this.setState({
-        errorMsg: "กรุณาใส่ค่า a, b, Error ให้ถูกต้อง (Error ต้องมากกว่า 0)",
-      });
-      return;
-    }
-
-    try {
-      f = this.compileFn(this.state.fn);
-    } catch (e) {
-      this.setState({ errorMsg: "Error: Invalid function" });
-      return;
-    }
-
-    while ((right - left) / 2 > errorVal) {
-      mid = (left + right) / 2;
-      if (f(mid) === 0) break;
-      if (f(left) * f(mid) < 0) right = mid;
-      else left = mid;
-      count++;
-    }
-
-    this.setState({ root: mid, iteration: count });
-  };
-
   render() {
+    const { fn, a, b, error, errorMsg, root, fxRoot } = this.state;
     return (
       <div className="Bisec-page">
         <BackButton />
@@ -68,7 +31,7 @@ class BisectionPage extends Component {
             <div>
               <label>f(x): </label>
               <input
-                value={this.state.fn}
+                value={fn}
                 onChange={(e) => this.setState({ fn: e.target.value })}
               />
             </div>
@@ -76,7 +39,7 @@ class BisectionPage extends Component {
             <div>
               <label>a: </label>
               <input
-                value={this.state.a}
+                value={a}
                 onChange={(e) => this.setState({ a: e.target.value })}
               />
             </div>
@@ -84,7 +47,7 @@ class BisectionPage extends Component {
             <div>
               <label>b: </label>
               <input
-                value={this.state.b}
+                value={b}
                 onChange={(e) => this.setState({ b: e.target.value })}
               />
             </div>
@@ -92,23 +55,79 @@ class BisectionPage extends Component {
             <div>
               <label>er: </label>
               <input
-                value={this.state.error}
+                value={error}
                 onChange={(e) => this.setState({ error: e.target.value })}
               />
             </div>
 
-            <button onClick={this.bisectionMethod}>Calculate</button>
-
-            <div>
-              {this.state.errorMsg && (
-                <p style={{ color: "red" }}>{this.state.errorMsg}</p>
+            <BisectionMT
+              fn={fn}
+              a={a}
+              b={b}
+              error={error}
+              onResult={({ root, fxRoot, errorMsg }) =>
+                this.setState({ root, fxRoot, errorMsg })
+              }
+            >
+              {({ Calculate }) => (
+                <div>
+                  <button onClick={Calculate}>Calculate</button>
+                  {errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}
+                </div>
               )}
-              {this.state.root && (
-                <p>
-                  Root: {this.state.root} Iteration: {this.state.iteration}
-                </p>
-              )}
-            </div>
+            </BisectionMT>
+            {/* <Plot
+              data={[
+                {
+                  x: root,
+                  y: fxRoot,
+                  type: "scatter",
+                  mode: "lines+markers",
+                  line: { color: "blue" },
+                  marker: { color: "red" },
+                },
+              ]}
+              layout={{
+                width: 1000,
+                height: 440,
+                title: "กราฟเส้นตัวอย่าง",
+                xaxis: { title: "แกน X" },
+                yaxis: {
+                  title: "แกน Y",
+                  autorange: true, // ให้ Plotly ปรับ max อัตโนมัติ
+                  range: [0, null], // min = 0, max = auto
+                },
+              }}
+            /> */}
+            <table>
+              <thead>
+                <tr>
+                  <th>Iter</th>
+                  <th>x</th>
+                  <th>f(x)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Array.isArray(root) && root.length > 0 ? (
+                  root.map((item, index) => (
+                    <tr key={index}>
+                      <td>{index}</td>
+                      <td>{item.toFixed(6)}</td>
+                      <td>{fxRoot[index].toFixed(6)}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan="3"
+                      style={{ textAlign: "center", color: "#666" }}
+                    >
+                      ยังไม่มีข้อมูล
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>

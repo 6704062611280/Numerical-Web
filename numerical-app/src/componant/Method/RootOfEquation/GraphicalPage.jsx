@@ -21,40 +21,7 @@ class GraphicalPage extends Component {
       fxRoots: [],
     };
   }
-  Graphical = () => {
-    const { fn, a, b, error } = this.state;
-    this.setState({
-      roots: [],
-      fxRoots: [],
-      errorMsg: "",
-    });
-
-    // setRoot([]);
-    // setFxRoot([]);
-    // setErrorMessage("");
-    console.log("fn = ", fn, " ,a = ", a, " b = ", b, " error = ", error);
-    // ตรวจสอบค่าว่าง
-    if (!fn || !a || !b || !error) {
-      this.setState({
-        errorMsg: "กรุณากรอกค่า f(x), X Start, X End, และ Error ให้ครบ",
-      });
-      return;
-    }
-    //เรียก function
-    const result = GraphicalMethod({ fn, a, b, error });
-    //set errorMsg
-    if (result.error) {
-      this.setState({ errorMsg: result.error });
-      // setErrorMessage(result.error);
-    } else {
-      this.setState({
-        roots: result.roots,
-        fxRoots: result.fxRoots,
-      });
-      // setRoot(result.roots);
-      // setFxRoot(result.fx);
-    }
-  };
+  
   //show Math text
   formatToLaTeX = (equation) => {
     return equation.replace(/\^(\d+)/g, "^{$1}");
@@ -127,13 +94,8 @@ class GraphicalPage extends Component {
                   </div>
                 )}
               </GraphicalMT>
-              {/* <div>
-                <button onClick={this.Graphical}>Calculate</button>
-              </div> */}
             </div>
-            {/* {errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>} */}
-
-
+          
             {/* plot */}
             <Plot
               data={[
@@ -167,7 +129,7 @@ class GraphicalPage extends Component {
             >
               <thead>
                 <tr>
-                  <th>ลำดับ</th>
+                  <th>Iter</th>
                   <th>รากที่หาได้ (x)</th>
                   <th>f(x)</th>
                 </tr>

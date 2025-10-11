@@ -31,6 +31,12 @@ class GraphicalMT extends Component {
       return;
     }
 
+    if (!fn || !a || !b || !error) {
+      errorMsg = "กรุณากรอกค่า f(x), X Start, X End, และ Error ให้ครบ";
+      if (this.props.onResult) this.props.onResult({ roots: [], fxRoots:[], errorMsg });  
+      return;
+    }
+
     try {
       f = this.compileFn(fn);
     } catch (e) {
