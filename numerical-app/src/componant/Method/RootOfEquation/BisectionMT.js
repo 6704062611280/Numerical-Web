@@ -1,13 +1,24 @@
 import { parse } from "mathjs";
 import { Component } from "react";
+
+function convertPowerToNthRoot(input) {  //Fixed fn before parse
+  let fixed = input.replace(/(\d)([a-zA-Z])/g, "$1*$2");
+  fixed = fixed.replace(
+    /\(([^()]+)\)\^\((\d+)\/(\d+)\)/g,
+    "nthRoot(($1)^$2,$3)"
+  );
+  return fixed;
+}
 class BisectionMT extends Component {
+
+  
   complieFn(text) {
     const node = parse(text);
     return (x) => node.evaluate({ x });
   }
   Calculate = () => {
     const { fn, a, b, error } = this.props;
-
+    let fixed_fn = convertPowerToNthRoot(fn) //เก็บค่าที่จัดรูปแล้ว
     let left = Number(a);
     let right = Number(b);
     let ErrorCheck = Number(error);
@@ -16,6 +27,14 @@ class BisectionMT extends Component {
     let count = 0;
 
     let errorMsg = "";
+
+    try {
+      f = this.complieFn(fixed_fn);
+    } catch (e) {
+      errorMsg = "Error: Invalid function";
+      if (this.props.onResult) this.props.onResult({ root: [], fxRoot: [], errorMsg })
+      return;
+    }
 
     if (isNaN(left) || isNaN(right) || isNaN(ErrorCheck) || ErrorCheck <= 0) {
       errorMsg = "กรุณาใส่ค่า a, b, Error ให้ถูกต้อง (Error ต้องมากกว่า 0)";
@@ -29,13 +48,7 @@ class BisectionMT extends Component {
       return;
     }
 
-    try {
-      f = this.complieFn(fn);
-    } catch (e) {
-      errorMsg = "Error: Invalid function";
-      if (this.props.onResult) this.props.onResult({ root: [], fxRoot: [], errorMsg })
-      return;
-    }
+    
 
     let stepX = [left, right];
     let stepFx = [f(left), f(right)];

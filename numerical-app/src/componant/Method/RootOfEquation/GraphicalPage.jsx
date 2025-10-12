@@ -24,7 +24,7 @@ class GraphicalPage extends Component {
   
   //show Math text
   formatToLaTeX = (equation) => {
-    return equation.replace(/\^(\d+)/g, "^{$1}");
+    return equation.replace(/\^\((.*?)\)/g, "^{\$1}");
   };
 
   render() {

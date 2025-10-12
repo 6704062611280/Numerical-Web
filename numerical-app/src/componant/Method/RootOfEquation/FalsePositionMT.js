@@ -1,6 +1,16 @@
 import { parse } from "mathjs";
 import { Component } from "react";
+
+function convertPowerToNthRoot(input) {  //Fixed fn before parse
+  let fixed = input.replace(/(\d)([a-zA-Z])/g, "$1*$2");
+  fixed = fixed.replace(
+    /\(([^()]+)\)\^\((\d+)\/(\d+)\)/g,
+    "nthRoot(($1)^$2,$3)"
+  );
+  return fixed;
+}
 class FalsePositionMT extends Component {
+
     compileFn(text) {
         const node = parse(text);
         return (x) => node.evaluate({ x });
@@ -8,14 +18,20 @@ class FalsePositionMT extends Component {
 
     Calculate = () => {
         const { fn, a, b, error } = this.props;
-
+        let fixed_fn = convertPowerToNthRoot(fn) //เก็บค่าที่จัดรูปแล้ว
 
         let left = Number(a);
         let right = Number(b);
         let ErrorCheck = Number(error);
         let f;
         let mid;
-
+        try { //เก็บ fn
+            f = this.compileFn(fixed_fn);
+        } catch (e) {
+            errorMsg = "Error: Invalid function";
+            if (this.props.onResult) this.props.onResult({ root: [], fxRoot: [], errorMsg })
+            return;
+        }
 
         let errorMsg = "";
         if (isNaN(left) || isNaN(right) || isNaN(ErrorCheck) || ErrorCheck <= 0) {
@@ -30,17 +46,11 @@ class FalsePositionMT extends Component {
             return;
         }
 
-        try {
-            f = this.compileFn(fn);
-        } catch (e) {
-            errorMsg = "Error: Invalid function";
-            if (this.props.onResult) this.props.onResult({ root: [], fxRoot: [], errorMsg })
-            return;
-        }
+        
 
         let stepX = [left, right];
         let stepFx = [f(left), f(right)];
-
+        console.log("TEST",f(left));
         while ((right - left) / 2 > ErrorCheck) {
 
             mid = (left * f(right) - right * f(left)) / (f(right) - f(left));
