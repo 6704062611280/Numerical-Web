@@ -3,7 +3,7 @@ import BackButton from "../../BackButton";
 import { matrix, max } from "mathjs";
 
 
-export default class ConjugateGradientPage extends Component {
+export default class GaussSeidelPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -25,8 +25,35 @@ export default class ConjugateGradientPage extends Component {
   }
 
   Calculate = () => {
-  
-    };
+  const n = this.state.matrixA.length;
+  let x = this.state.matrix_x0.map(val => parseFloat(val)); // ค่าเริ่มต้น
+  let resultAll = [];
+  let errorAll = [];
+
+  for (let iter = 0; iter < this.state.maxIteration; iter++) {
+    let xOld = [...x]; // เก็บค่าเก่าเพื่อคำนวณ error
+
+    for (let i = 0; i < n; i++) {
+      let sum = 0;
+      for (let j = 0; j < n; j++) {
+        if (j !== i) {
+          sum += parseFloat(this.state.matrixA[i][j]) * x[j]; // ใช้ x ที่อัปเดตแล้วทันที
+        }
+      }
+      x[i] = (parseFloat(this.state.matrixB[i]) - sum) / parseFloat(this.state.matrixA[i][i]);
+    }
+
+    // คำนวณ error
+    const error = x.map((val, index) => Math.abs((val - xOld[index]) / val));
+    resultAll.push([...x]);
+    errorAll.push(Math.max(...error));
+
+    // หยุดถ้า error < tolerance
+    if (Math.max(...error) < this.state.tolerance) break;
+  }
+
+  this.setState({ matrix_result: resultAll, matrix_error: errorAll });
+};
 
   handleGenerate = () => {
     if (this.state.size_matrix > 10) {
@@ -79,7 +106,7 @@ export default class ConjugateGradientPage extends Component {
       <div>
         <BackButton />
         <div>
-          <h1>ConjugageGradient</h1>
+          <h1>GaussSeidel</h1>
         </div>
         <div>
           <label>Matrix size : </label>

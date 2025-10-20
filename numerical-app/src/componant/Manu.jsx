@@ -26,6 +26,7 @@ export default function Manu() {
       "Matrix Inversion",
       "LU decomposition Methods",
       "Jacobi iteration methods",
+      "Gauss Seidel Methods",
       "Conjugate Gradient Methods",
     ],
     Interpolation: [

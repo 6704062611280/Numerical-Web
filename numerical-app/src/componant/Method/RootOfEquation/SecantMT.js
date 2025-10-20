@@ -18,7 +18,7 @@ class SecantMT extends Component {
         const { fn, x0, x1, error } = this.props;
 
         const safeFn = convertPowerToNthRoot(fn);
-
+        
         let node, compiled, fPrimeNode, fPrimeCompiled;
 
         try {

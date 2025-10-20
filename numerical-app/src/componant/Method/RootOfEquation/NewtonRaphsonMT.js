@@ -39,7 +39,7 @@ class NewtonRaphsonMT extends Component {
         let xStart = Number(xInitial);
         let ErrorCheck = Number(error);
         let errorMsg = "";
-
+        // console.log(fn)
         if (isNaN(xStart) || isNaN(ErrorCheck)) {
             errorMsg = "กรุณาใส่ค่าเริ่มต้นและค่า Error ให้ถูกต้อง";
             if (this.props.onResult)

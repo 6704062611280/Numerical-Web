@@ -9,9 +9,10 @@ import SecantPage from "./Method/RootOfEquation/SecantPage"
 import ConjugateGradientPage from "./Method/LinearAlgerbraEquation/ConjugateGradientPage"
 import CramerRulePage from "./Method/LinearAlgerbraEquation/CramerRulePage"
 import GaussEliminationPage from "./Method/LinearAlgerbraEquation/GaussEliminationPage"
-import GaussJordanEliminationPage from "./Method/LinearAlgerbraEquation/GaussEliminationPage"
+import GaussJordanEliminationPage from "./Method/LinearAlgerbraEquation/GaussJordanEliminationPage"
 import MatrixInversionPage from "./Method/LinearAlgerbraEquation/MatrixInversionPage"
 import JacobiIterationPage from "./Method/LinearAlgerbraEquation/JacobiIterationPage"
+import GaussSeidelPage from "./Method/LinearAlgerbraEquation/GaussSeidelPage";
 import LuDecompositionPage from "./Method/LinearAlgerbraEquation/LuDecompositionPage"
 
 import NewtonDevidedDiffPage from "./Method/Interpolation/NewtonDevidedDiffPage"
@@ -49,6 +50,7 @@ export default function AllLink() {
                 <Route path="/Gauss elimination" element={<GaussEliminationPage />}/>
                 <Route path="/Gauss Jordan elimination" element={<GaussJordanEliminationPage />}/>
                 <Route path="/Jacobi iteration methods" element={<JacobiIterationPage />}/>
+                <Route path="/Gauss Seidel Methods" element={<GaussSeidelPage />}/>
                 <Route path="/LU decomposition Methods" element={<LuDecompositionPage />}/>
                 <Route path="/Matrix Inversion" element={<MatrixInversionPage />}/>
                 

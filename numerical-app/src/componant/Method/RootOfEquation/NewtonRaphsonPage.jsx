@@ -82,8 +82,7 @@ export default class NewtonRaphsonPage extends Component {
                 ) : (
                   <tr>
                     <td
-                      colSpan="3"
-                      style={{ textAlign: "center", color: "#666" }}
+                      
                     >
                       ยังไม่มีข้อมูล
                     </td>

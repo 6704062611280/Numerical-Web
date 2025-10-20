@@ -3,7 +3,7 @@ import BackButton from "../../BackButton";
 import { matrix, max } from "mathjs";
 
 
-export default class ConjugateGradientPage extends Component {
+export default class GaussJordanEliminationPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -16,7 +16,6 @@ export default class ConjugateGradientPage extends Component {
       matrixVariable: ["", "", ""],
       matrixB: [400, 400, 400],
       errorMsg: "",
-      matrix_x0: [100, 100, 100],
       maxIteration: 100,
       tolerance: 0.000001,
       matrix_result: [],
@@ -26,7 +25,7 @@ export default class ConjugateGradientPage extends Component {
 
   Calculate = () => {
   
-    };
+};
 
   handleGenerate = () => {
     if (this.state.size_matrix > 10) {
@@ -45,8 +44,7 @@ export default class ConjugateGradientPage extends Component {
     const newMatrixB = Array.from({ length: size }, () => "");
     this.setState({ matrixB: newMatrixB, errorMsg: "" });
 
-    const newMatrix_x0 = Array.from({ length: size }, () => "");
-    this.setState({ matrix_x0: newMatrix_x0 });
+    
   };
 
   handleChangeMatrixA = (r, c, value) => {
@@ -65,21 +63,16 @@ export default class ConjugateGradientPage extends Component {
     this.setState({ matrixB: newMatrixB });
   };
 
-  handleChangeMatrix_x0 = (r, value) => {
-    const newMatrix_x0 = this.state.matrix_x0.map((val, index) =>
-      index === r ? value : val
-    );
-    this.setState({ matrix_x0: newMatrix_x0 });
-  };
+  
 
   render() {
-    const { size_matrix, matrixA, matrixB,matrix_x0, matrixVariable, errorMsg } =
+    const { size_matrix, matrixA, matrixB, matrixVariable, errorMsg } =
       this.state;
     return (
       <div>
         <BackButton />
         <div>
-          <h1>ConjugageGradient</h1>
+          <h1>GaussJordanEliminate</h1>
         </div>
         <div>
           <label>Matrix size : </label>
@@ -169,29 +162,7 @@ export default class ConjugateGradientPage extends Component {
             </div>
           </div>
         </div>
-        {/* Show Matrix_x0 */}
-        <div>
-          <p style={{ display: "block", alignItems: "center" }}>{"{x0}"}</p>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: `repeat(${size_matrix}, 60px)`,
-              gap: "20px",
-              marginTop: "15px",
-            }}
-          >
-            {matrix_x0.map((val, r) => (
-              <input
-                style={{ width: "50px", height: "50px", borderRadius: "5px" }}
-                key={`x0-${r}`}
-                type="number"
-                value={val}
-                placeholder={`x${r}`}
-                onChange={(e) => this.handleChangeMatrix_x0(r, e.target.value)}
-              />
-            ))}
-          </div>
-        </div>
+        
 
         {/* Button Calculate */}
         <div>
