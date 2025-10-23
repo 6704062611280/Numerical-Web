@@ -1,7 +1,6 @@
 import { Component } from "react";
 import BackButton from "../../BackButton";
-import { matrix, max } from "mathjs";
-
+import "../../GlobalStyle.css";
 
 export default class ConjugateGradientPage extends Component {
   constructor(props) {
@@ -9,46 +8,98 @@ export default class ConjugateGradientPage extends Component {
     this.state = {
       size_matrix: 3,
       matrixA: [
-        [4, -4, 0],
-        [-1, 4, -2],
-        [0, -2, 4],
+        [4, 1, 1],
+        [1, 3, -1],
+        [1, -1, 2],
       ],
       matrixVariable: ["", "", ""],
-      matrixB: [400, 400, 400],
+      matrixB: [6, 6, 5],
       errorMsg: "",
-      matrix_x0: [100, 100, 100],
+      matrix_x0: [0, 0, 0],
       maxIteration: 100,
       tolerance: 0.000001,
-      matrix_result: [],
-      matrix_error: [],
+      matrix_result: [], // เก็บค่า x ของแต่ละ iteration
+      matrix_error: [], // เก็บ error ของแต่ละ iteration
     };
   }
 
+  // ฟังก์ชัน Conjugate Gradient
   Calculate = () => {
-  
-    };
+    const n = parseInt(this.state.size_matrix);
+    const A = this.state.matrixA.map((row) => row.map(Number));
+    const B = this.state.matrixB.map(Number);
+    let x = this.state.matrix_x0.map(Number);
 
+    const maxIter = this.state.maxIteration;
+    const tol = this.state.tolerance;
+
+    // r0 = B - A*x0 (residual)
+    let r = B.map(
+      (b, i) => b - A[i].reduce((sum, aij, j) => sum + aij * x[j], 0)
+    );
+
+    // p0 = r0
+    let p = [...r];
+
+    // rsOld = r0^T * r0
+    let rsOld = r.reduce((sum, ri) => sum + ri * ri, 0);
+
+    const matrix_result = [];
+    const matrix_error = [];
+
+    for (let k = 0; k < maxIter; k++) {
+      // Ap = A*p
+      const Ap = A.map((row, i) =>
+        row.reduce((sum, aij, j) => sum + aij * p[j], 0)
+      );
+
+      // alpha = (r^T * r) / (p^T * A * p)
+      const alpha = rsOld / p.reduce((sum, pi, i) => sum + pi * Ap[i], 0);
+
+      // x_{k+1} = x_k + alpha * p
+      x = x.map((xi, i) => xi + alpha * p[i]);
+
+      // r_{k+1} = r_k - alpha * Ap
+      r = r.map((ri, i) => ri - alpha * Ap[i]);
+
+      // rsNew = r_{k+1}^T * r_{k+1}
+      const rsNew = r.reduce((sum, ri) => sum + ri * ri, 0);
+
+      // เก็บค่า iteration
+      matrix_result.push([...x]);
+      matrix_error.push(Math.sqrt(rsNew));
+
+      // ถ้า error น้อยกว่า tolerance ให้หยุด
+      if (Math.sqrt(rsNew) < tol) break;
+
+      // Update p_{k+1} = r_{k+1} + (rsNew/rsOld) * p_k
+      p = r.map((ri, i) => ri + (rsNew / rsOld) * p[i]);
+      rsOld = rsNew;
+    }
+
+    this.setState({ matrix_result, matrix_error });
+  };
+
+  // ฟังก์ชัน Generate เมทริกซ์ว่าง
   handleGenerate = () => {
-    if (this.state.size_matrix > 10) {
+    const size = parseInt(this.state.size_matrix);
+    if (size > 10) {
       this.setState({ errorMsg: "ขนาดเมทริกซ์ต้องไม่เกิน 10" });
       return;
     }
-    const size = parseInt(this.state.size_matrix);
-    const newMatrixA = Array.from({ length: size }, () =>
-      Array.from({ length: size }, () => "")
-    );
-    this.setState({ matrixA: newMatrixA });
 
-    const newMatrixVariable = Array.from({ length: size }, () => "");
-    this.setState({ matrixVariable: newMatrixVariable });
-
-    const newMatrixB = Array.from({ length: size }, () => "");
-    this.setState({ matrixB: newMatrixB, errorMsg: "" });
-
-    const newMatrix_x0 = Array.from({ length: size }, () => "");
-    this.setState({ matrix_x0: newMatrix_x0 });
+    this.setState({
+      matrixA: Array.from({ length: size }, () => Array(size).fill("")),
+      matrixVariable: Array.from({ length: size }, () => ""),
+      matrixB: Array(size).fill(""),
+      matrix_x0: Array(size).fill(""),
+      errorMsg: "",
+      matrix_result: [],
+      matrix_error: [],
+    });
   };
 
+  // ฟังก์ชันแก้ไขค่า A, B, x0
   handleChangeMatrixA = (r, c, value) => {
     const newMatrixA = this.state.matrixA.map((row, rowIndex) =>
       row.map((col, colIndex) =>
@@ -57,14 +108,12 @@ export default class ConjugateGradientPage extends Component {
     );
     this.setState({ matrixA: newMatrixA });
   };
-
   handleChangeMatrixB = (r, value) => {
     const newMatrixB = this.state.matrixB.map((val, index) =>
       index === r ? value : val
     );
     this.setState({ matrixB: newMatrixB });
   };
-
   handleChangeMatrix_x0 = (r, value) => {
     const newMatrix_x0 = this.state.matrix_x0.map((val, index) =>
       index === r ? value : val
@@ -73,160 +122,157 @@ export default class ConjugateGradientPage extends Component {
   };
 
   render() {
-    const { size_matrix, matrixA, matrixB,matrix_x0, matrixVariable, errorMsg } =
-      this.state;
-    return (
-      <div>
-        <BackButton />
-        <div>
-          <h1>ConjugageGradient</h1>
-        </div>
-        <div>
-          <label>Matrix size : </label>
-          <input
-            type="text"
-            value={size_matrix}
-            onChange={(e) => this.setState({ size_matrix: e.target.value })}
-          />
-          <button onClick={this.handleGenerate}>Generate</button>
-        </div>
-        <div>{errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}</div>
+    const {
+      size_matrix,
+      matrixA,
+      matrixB,
+      matrix_x0,
+      matrixVariable,
+      errorMsg,
+    } = this.state;
 
-        {/* Show MatrixInput */}
-        <div style={{ display: "flex", gap: "50px", marginTop: "20px" }}>
-          <div>
-            <p style={{ display: "block", alignItems: "center" }}>[A]</p>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: `repeat(${size_matrix}, 60px)`,
-                gap: "20px",
-                marginTop: "15px",
-              }}
-            >
-              {matrixA.map((row, r) =>
-                row.map((val, c) => (
+    return (
+      <div className="page">
+        <BackButton />
+        <div className="container">
+          <h1 style={{ padding: "20px" }}>Conjugate Gradient Method</h1>
+          <div className="input-text">
+            <label>Matrix size : </label>
+            <input
+              type="number"
+              value={size_matrix}
+              onChange={(e) => this.setState({ size_matrix: e.target.value })}
+            />
+            <button onClick={this.handleGenerate}>Generate</button>
+          </div>
+
+          {errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}
+
+          <div className="matrix-container">
+            {/* Matrix A */}
+            <div className="matrix-box">
+              <p className="matrix-title">[A]</p>
+              <div
+                className="matrix-grid"
+                style={{ gridTemplateColumns: `repeat(${size_matrix}, 60px)` }}
+              >
+                {matrixA.map((row, r) =>
+                  row.map((val, c) => (
+                    <input
+                      key={`A-${r}-${c}`}
+                      type="number"
+                      value={val}
+                      placeholder={`a${r + 1}${c + 1}`}
+                      className="matrix-input"
+                      onChange={(e) =>
+                        this.handleChangeMatrixA(r, c, e.target.value)
+                      }
+                    />
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* × symbol */}
+            <span className="symbol">×</span>
+
+            {/* Vector X */}
+            <div className="vector-box">
+              <p className="vector-title">{"{X}"}</p>
+              <div className="vector-grid">
+                {matrixVariable.map((val, r) => (
                   <input
-                    style={{
-                      width: "50px",
-                      height: "50px",
-                      borderRadius: "5px",
-                    }}
-                    key={`A-${r}-${c}`}
+                    key={`X-${r}`}
                     type="number"
                     value={val}
-                    placeholder={`a${r + 1}${c + 1}`}
+                    placeholder={`x${r}`}
+                    disabled
+                    className="vector-input"
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* = symbol */}
+            <span className="symbol">=</span>
+
+            {/* Vector B */}
+            <div className="vector-box">
+              <p className="vector-title">{"{B}"}</p>
+              <div className="vector-grid">
+                {matrixB.map((val, r) => (
+                  <input
+                    key={`B-${r}`}
+                    type="number"
+                    value={val}
+                    placeholder={`b${r}`}
+                    className="vector-input"
                     onChange={(e) =>
-                      this.handleChangeMatrixA(r, c, e.target.value)
+                      this.handleChangeMatrixB(r, e.target.value)
                     }
                   />
-                ))
-              )}
+                ))}
+              </div>
             </div>
           </div>
 
-          <div>
-            <p style={{ display: "block", alignItems: "center" }}>{"{X}"}</p>
+          {/* x0 */}
+          <div className="vector-x0">
+            <p className="matrix-title">x<sub>0</sub></p>
             <div
-              style={{
-                display: "grid",
-                gap: "20px",
-                marginTop: "15px",
-              }}
+              className="vector-grid"
+              style={{ gridTemplateColumns: `repeat(${size_matrix}, 60px)` }}
             >
-              {matrixVariable.map((val, r) => (
+              {matrix_x0.map((val, r) => (
                 <input
-                  style={{ width: "50px", height: "50px", borderRadius: "5px" }}
-                  key={`X-${r}`}
+                  key={`x0-${r}`}
                   type="number"
                   value={val}
                   placeholder={`x${r}`}
-                  disabled
+                  className="vector-input"
+                  onChange={(e) =>
+                    this.handleChangeMatrix_x0(r, e.target.value)
+                  }
                 />
               ))}
             </div>
           </div>
 
-          <div>
-            <p style={{ display: "block", alignItems: "center" }}>{"{B}"}</p>
-            <div
-              style={{
-                display: "grid",
-                gap: "20px",
-                marginTop: "15px",
-              }}
-            >
-              {matrixB.map((val, r) => (
-                <input
-                  style={{ width: "50px", height: "50px", borderRadius: "5px" }}
-                  key={`B-${r}`}
-                  type="number"
-                  value={val}
-                  placeholder={`b${r}`}
-                  onChange={(e) => this.handleChangeMatrixB(r, e.target.value)}
-                />
-              ))}
-            </div>
+          {/* Calculate button */}
+          <div style={{ marginTop: "20px" }}>
+            <button onClick={this.Calculate}>Calculate</button>
           </div>
-        </div>
-        {/* Show Matrix_x0 */}
-        <div>
-          <p style={{ display: "block", alignItems: "center" }}>{"{x0}"}</p>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: `repeat(${size_matrix}, 60px)`,
-              gap: "20px",
-              marginTop: "15px",
-            }}
-          >
-            {matrix_x0.map((val, r) => (
-              <input
-                style={{ width: "50px", height: "50px", borderRadius: "5px" }}
-                key={`x0-${r}`}
-                type="number"
-                value={val}
-                placeholder={`x${r}`}
-                onChange={(e) => this.handleChangeMatrix_x0(r, e.target.value)}
-              />
-            ))}
-          </div>
-        </div>
 
-        {/* Button Calculate */}
-        <div>
-          <button onClick={this.Calculate}>Calculate</button>
-        </div>
-        {/* Show Result */}
-        <div>
-          <table>
-            <thead>
-              <tr>
-                <th>Iter</th>
-                <th>xK</th>
-                <th>error</th>
-              </tr>
-            </thead>
-            <tbody>
-              {this.state.matrix_result.length > 0 ? (
-                this.state.matrix_result.map((item, index) => (
-                  <tr key={index}>
-                    <td>{index}</td>
-                    <td>
-                      {item.map((val) => Number(val).toFixed(6)).join(", ")}
-                    </td>
-                    <td>
-                      {Number(this.state.matrix_error[index]).toExponential(2)}
+          {/* Output table */}
+          <div style={{ marginTop: "20px" }}>
+            <h2>Iteration Results</h2>
+            <table border="1" cellPadding="5">
+              <thead>
+                <tr>
+                  <th>Iter</th>
+                  <th>xK</th>
+                  <th>Residual (Error)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {this.state.matrix_result.length > 0 ? (
+                  this.state.matrix_result.map((xIter, idx) => (
+                    <tr key={idx}>
+                      <td>{idx + 1}</td>
+                      <td>{xIter.map((v) => v.toFixed(6)).join(", ")}</td>
+                      <td>{this.state.matrix_error[idx].toExponential(2)}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="3" style={{ textAlign: "center" }}>
+                      ยังไม่มีข้อมูล
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={3}>ยังไม่มีข้อมูล</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     );

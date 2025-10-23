@@ -1,6 +1,10 @@
 import BackButton from "../../BackButton";
 import { Component } from "react";
 import OnePointMT from "./OnePointMT";
+import "../../GlobalStyle.css";
+import ResultTable from "../../ResultTable";
+import FormatLatex from "../../FormatLatex";
+
 class OnePointPage extends Component {
   constructor(props) {
     super(props);
@@ -14,83 +18,59 @@ class OnePointPage extends Component {
     };
   }
   render() {
-    const { gx, xInitial, error, errorMsg ,errorPer, xRoot} = this.state;
+    const { gx, xInitial, error, errorMsg, errorPer, xRoot } = this.state;
     return (
-      <div>
+      <div className="page">
         <BackButton />
-        <div>
-          <h1>One-point Iteration Methods</h1>
+        <div className="container">
+          <h1 style={{padding:"20px"}}>One-point Iteration Methods</h1>
           <div>
-            {/* input */}
-            <div>
-              <label>x Initial</label>
-              <input
-                type="text"
-                value={xInitial}
-                onChange={(e) => this.setState({ xInitial: e.target.value })}
-              />
-            </div>
-            <div>
-              <label>gx</label>
-              <input
-                type="text"
-                value={gx}
-                onChange={(e) => this.setState({ gx: e.target.value })}
-              />
-            </div>
-            <div>
-              <label>error</label>
-              <input
-                type="text"
-                value={error}
-                onChange={(e) => this.setState({ error: e.target.value })}
-              />
-            </div>
+            <FormatLatex fn={gx} />
+            <div className="input-text">
+              {/* input */}
+              <div>
+                <label>x Initial </label>
+                <input
+                  type="text"
+                  value={xInitial}
+                  onChange={(e) => this.setState({ xInitial: e.target.value })}
+                />
+              </div>
+              <div>
+                <label>gx </label>
+                <input
+                  type="text"
+                  value={gx}
+                  onChange={(e) => this.setState({ gx: e.target.value })}
+                />
+              </div>
+              <div>
+                <label>Error </label>
+                <input
+                  type="text"
+                  value={error}
+                  onChange={(e) => this.setState({ error: e.target.value })}
+                />
+              </div>
 
-            <OnePointMT
-              gx={gx}
-              xInitial={xInitial}
-              error={error}
-              onResult={({ xRoot, errorPer, errorMsg }) =>
-                this.setState({ xRoot, errorPer, errorMsg })
-              }
-            >
-              {({ Calculate }) => (
-                <div>
-                  <button onClick={Calculate}>Calculate</button>
-                  {errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}
-                </div>
-              )}
-            </OnePointMT>
-            <table>
-              <thead>
-                <tr>
-                  <th>Iter</th>
-                  <th>x</th>
-                  <th>error</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Array.isArray(xRoot) && xRoot.length > 0 ? (
-                  xRoot.map((item, index) => (
-                    <tr key={index}>
-                      <td>{index}</td>
-                      <td>{Number(item).toFixed(6)}</td>
-                      <td>{Number(errorPer[index]).toFixed(6)}</td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td
-                      colSpan="3"
-                      style={{ textAlign: "center", color: "#666" }}
-                    >
-                      ยังไม่มีข้อมูล
-                    </td>
-                  </tr>
+              <OnePointMT
+                gx={gx}
+                xInitial={xInitial}
+                error={error}
+                onResult={({ xRoot, errorPer, errorMsg }) =>
+                  this.setState({ xRoot, errorPer, errorMsg })
+                }
+              >
+                {({ Calculate }) => (
+                  <div>
+                    <button onClick={Calculate}>Calculate</button>
+                    {errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}
+                  </div>
                 )}
-              </tbody>
-            </table>
+              </OnePointMT>
+              
+            </div>
+            <ResultTable roots={xRoot} fxRoots={errorPer} />
           </div>
         </div>
       </div>

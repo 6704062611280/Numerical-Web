@@ -2,7 +2,6 @@ import { Component } from "react";
 import BackButton from "../../BackButton";
 import { matrix, max } from "mathjs";
 
-
 export default class LuDecompositionPage extends Component {
   constructor(props) {
     super(props);
@@ -20,12 +19,76 @@ export default class LuDecompositionPage extends Component {
       tolerance: 0.000001,
       matrix_result: [],
       matrix_error: [],
+      steps: [],
     };
   }
 
   Calculate = () => {
-  
-};
+    const n = this.state.size_matrix;
+    const A = this.state.matrixA.map((row) => [...row]);
+    const B = [...this.state.matrixB];
+
+    const L = Array.from({ length: n }, (_, i) =>
+      Array.from({ length: n }, (_, j) => (i === j ? 1 : 0))
+    );
+    const U = Array.from({ length: n }, () => Array(n).fill(0));
+
+    const steps = [];
+
+    // Decomposition
+    for (let i = 0; i < n; i++) {
+      // คำนวณ U[i][j]
+      for (let j = i; j < n; j++) {
+        let sum = 0;
+        for (let k = 0; k < i; k++) sum += L[i][k] * U[k][j];
+        U[i][j] = A[i][j] - sum;
+      }
+
+      // คำนวณ L[j][i]
+      for (let j = i + 1; j < n; j++) {
+        let sum = 0;
+        for (let k = 0; k < i; k++) sum += L[j][k] * U[k][i];
+        L[j][i] = (A[j][i] - sum) / U[i][i];
+      }
+
+      steps.push({
+        step: `Decompose row ${i + 1}`,
+        L: L.map((r) => [...r]),
+        U: U.map((r) => [...r]),
+      });
+    }
+
+    // Forward Substitution Ly = B
+    const Y = Array(n).fill(0);
+    for (let i = 0; i < n; i++) {
+      let sum = 0;
+      for (let j = 0; j < i; j++) sum += L[i][j] * Y[j];
+      Y[i] = B[i] - sum;
+      steps.push({
+        step: `Forward Substitution y${i + 1}`,
+        Y: [...Y],
+      });
+    }
+
+    // Back Substitution Ux = Y
+    const X = Array(n).fill(0);
+    for (let i = n - 1; i >= 0; i--) {
+      let sum = 0;
+      for (let j = i + 1; j < n; j++) sum += U[i][j] * X[j];
+      X[i] = (Y[i] - sum) / U[i][i];
+      steps.push({
+        step: `Back Substitution x${i + 1}`,
+        X: [...X],
+      });
+    }
+
+    this.setState({
+      matrix_result: X,
+      matrix_error: new Array(1).fill(0),
+      steps,
+      errorMsg: "",
+    });
+  };
 
   handleGenerate = () => {
     if (this.state.size_matrix > 10) {
@@ -43,8 +106,6 @@ export default class LuDecompositionPage extends Component {
 
     const newMatrixB = Array.from({ length: size }, () => "");
     this.setState({ matrixB: newMatrixB, errorMsg: "" });
-
-    
   };
 
   handleChangeMatrixA = (r, c, value) => {
@@ -63,141 +124,192 @@ export default class LuDecompositionPage extends Component {
     this.setState({ matrixB: newMatrixB });
   };
 
-  
-
   render() {
     const { size_matrix, matrixA, matrixB, matrixVariable, errorMsg } =
       this.state;
     return (
-      <div>
+      <div className="page">
         <BackButton />
-        <div>
-          <h1>LU</h1>
-        </div>
-        <div>
-          <label>Matrix size : </label>
-          <input
-            type="text"
-            value={size_matrix}
-            onChange={(e) => this.setState({ size_matrix: e.target.value })}
-          />
-          <button onClick={this.handleGenerate}>Generate</button>
-        </div>
-        <div>{errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}</div>
+        <div className="container">
+          <h1 style={{ padding: "20px" }}>LU Decomposition Method</h1>
 
-        {/* Show MatrixInput */}
-        <div style={{ display: "flex", gap: "50px", marginTop: "20px" }}>
-          <div>
-            <p style={{ display: "block", alignItems: "center" }}>[A]</p>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: `repeat(${size_matrix}, 60px)`,
-                gap: "20px",
-                marginTop: "15px",
-              }}
-            >
-              {matrixA.map((row, r) =>
-                row.map((val, c) => (
+          <div className="input-text">
+            <label>Matrix size : </label>
+            <input
+              type="text"
+              value={size_matrix}
+              onChange={(e) => this.setState({ size_matrix: e.target.value })}
+            />
+            <button onClick={this.handleGenerate}>Generate</button>
+          </div>
+          <div>{errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}</div>
+
+          {/* Show MatrixInput */}
+          <div className="matrix-container">
+            {/* ---------------- [A] ---------------- */}
+            <div className="matrix-box">
+              <p className="matrix-title">[A]</p>
+              <div
+                className="matrix-grid"
+                style={{
+                  gridTemplateColumns: `repeat(${size_matrix}, 60px)`,
+                }}
+              >
+                {matrixA.map((row, r) =>
+                  row.map((val, c) => (
+                    <input
+                      className="matrix-input"
+                      key={`A-${r}-${c}`}
+                      type="number"
+                      value={val}
+                      placeholder={`a${r + 1}${c + 1}`}
+                      onChange={(e) =>
+                        this.handleChangeMatrixA(r, c, e.target.value)
+                      }
+                    />
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* ---------------- × ---------------- */}
+            <span className="symbol">×</span>
+
+            {/* ---------------- {X} ---------------- */}
+            <div className="vector-box">
+              <p className="vector-title">{"{X}"}</p>
+              <div className="vector-grid">
+                {matrixVariable.map((val, r) => (
                   <input
-                    style={{
-                      width: "50px",
-                      height: "50px",
-                      borderRadius: "5px",
-                    }}
-                    key={`A-${r}-${c}`}
+                    key={`X-${r}`}
+                    type="number"
+                    className="vector-input"
+                    value={val}
+                    placeholder={`x${r + 1}`}
+                    disabled
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* ---------------- = ---------------- */}
+            <span className="symbol">=</span>
+
+            {/* ---------------- {B} ---------------- */}
+            <div className="vector-box">
+              <p className="vector-title">{"{B}"}</p>
+              <div className="vector-grid">
+                {matrixB.map((val, r) => (
+                  <input
+                    className="vector-input"
+                    key={`B-${r}`}
                     type="number"
                     value={val}
-                    placeholder={`a${r + 1}${c + 1}`}
+                    placeholder={`b${r + 1}`}
                     onChange={(e) =>
-                      this.handleChangeMatrixA(r, c, e.target.value)
+                      this.handleChangeMatrixB(r, e.target.value)
                     }
                   />
-                ))
-              )}
+                ))}
+              </div>
             </div>
           </div>
 
+          {/* Button Calculate */}
           <div>
-            <p style={{ display: "block", alignItems: "center" }}>{"{X}"}</p>
-            <div
-              style={{
-                display: "grid",
-                gap: "20px",
-                marginTop: "15px",
-              }}
-            >
-              {matrixVariable.map((val, r) => (
-                <input
-                  style={{ width: "50px", height: "50px", borderRadius: "5px" }}
-                  key={`X-${r}`}
-                  type="number"
-                  value={val}
-                  placeholder={`x${r}`}
-                  disabled
-                />
-              ))}
-            </div>
+            <button onClick={this.Calculate}>Calculate</button>
           </div>
-
+          {/* Show Result */}
           <div>
-            <p style={{ display: "block", alignItems: "center" }}>{"{B}"}</p>
-            <div
-              style={{
-                display: "grid",
-                gap: "20px",
-                marginTop: "15px",
-              }}
-            >
-              {matrixB.map((val, r) => (
-                <input
-                  style={{ width: "50px", height: "50px", borderRadius: "5px" }}
-                  key={`B-${r}`}
-                  type="number"
-                  value={val}
-                  placeholder={`b${r}`}
-                  onChange={(e) => this.handleChangeMatrixB(r, e.target.value)}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-        
+            <h2>Steps</h2>
+            {this.state.steps.length === 0 ? (
+              <p>ยังไม่มีขั้นตอน</p>
+            ) : (
+              this.state.steps.map((s, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    marginBottom: "20px",
+                    border: "1px solid #ccc",
+                    padding: "10px",
+                    borderRadius: "5px",
+                  }}
+                >
+                  <h4>{s.step}</h4>
 
-        {/* Button Calculate */}
-        <div>
-          <button onClick={this.Calculate}>Calculate</button>
-        </div>
-        {/* Show Result */}
-        <div>
-          <table>
-            <thead>
-              <tr>
-                <th>Iter</th>
-                <th>xK</th>
-                <th>error</th>
-              </tr>
-            </thead>
-            <tbody>
-              {this.state.matrix_result.length > 0 ? (
-                this.state.matrix_result.map((item, index) => (
-                  <tr key={index}>
-                    <td>{index}</td>
-                    <td>
-                      {item.map((val) => Number(val).toFixed(6)).join(", ")}
-                    </td>
-                    <td>
-                      {Number(this.state.matrix_error[index]).toExponential(2)}
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={3}>ยังไม่มีข้อมูล</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                  {/* L Matrix */}
+                  {s.L && (
+                    <div>
+                      <strong>L:</strong>
+                      <table
+                        style={{
+                          borderCollapse: "collapse",
+                          marginBottom: "10px",
+                        }}
+                      >
+                        <tbody>
+                          {s.L.map((row, rIdx) => (
+                            <tr key={rIdx}>
+                              {row.map((v, cIdx) => (
+                                <td
+                                  key={cIdx}
+                                  style={{
+                                    border: "1px solid #ddd",
+                                    padding: "5px",
+                                  }}
+                                >
+                                  {v.toFixed(2)}
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  {/* U Matrix */}
+                  {s.U && (
+                    <div>
+                      <strong>U:</strong>
+                      <table
+                        style={{
+                          borderCollapse: "collapse",
+                          marginBottom: "10px",
+                        }}
+                      >
+                        <tbody>
+                          {s.U.map((row, rIdx) => (
+                            <tr key={rIdx}>
+                              {row.map((v, cIdx) => (
+                                <td
+                                  key={cIdx}
+                                  style={{
+                                    border: "1px solid #ddd",
+                                    padding: "5px",
+                                  }}
+                                >
+                                  {v.toFixed(2)}
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  {/* Y or X */}
+                  {(s.Y || s.X) && (
+                    <div>
+                      <strong>{s.Y ? "Y:" : "X:"}</strong>{" "}
+                      {(s.Y || s.X).map((v) => v.toFixed(2)).join(", ")}
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </div>
     );

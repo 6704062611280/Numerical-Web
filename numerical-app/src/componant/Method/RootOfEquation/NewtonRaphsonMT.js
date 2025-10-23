@@ -63,7 +63,7 @@ class NewtonRaphsonMT extends Component {
 
         const xNew_Array = [xNew];
         const ePer_Array = [ePer];
-
+    
         while (ePer >= ErrorCheck && count < Max_count) {
             xStart = xNew;
             xNew = xStart - (f(xStart) / fPrime(xStart));

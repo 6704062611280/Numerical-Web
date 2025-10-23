@@ -2,6 +2,9 @@
 import React, { Component } from "react";
 import BackButton from "../../BackButton";
 import FalsePositionMT from "./FalsePositionMT";
+import "../../GlobalStyle.css";
+import ResultTable from "../../ResultTable";
+import FormatLatex from "../../FormatLatex";
 
 class FalsePositionPage extends Component {
   constructor(props) {
@@ -21,86 +24,65 @@ class FalsePositionPage extends Component {
     const { fn, a, b, error, root, fxRoot, errorMsg } = this.state;
 
     return (
-      <div>
+      <div className="page">
         <BackButton />
         <div className="container">
-          <h1>False-Position</h1>
-
+          <h1 style={{padding:"20px"}}>False-Position</h1>
           <div>
-            <label>f(x): </label>
-            <input
-              value={fn}
-              onChange={(e) => this.setState({ fn: e.target.value })}
-            />
-          </div>
-
-          <div>
-            <label>a: </label>
-            <input
-              value={a}
-              onChange={(e) => this.setState({ a: e.target.value })}
-            />
-            <label>b: </label>
-            <input
-              value={b}
-              onChange={(e) => this.setState({ b: e.target.value })}
-            />
-          </div>
-
-          <div>
-            <label>Error: </label>
-            <input
-              value={error}
-              onChange={(e) => this.setState({ error: e.target.value })}
-            />
-          </div>
-
-          <FalsePositionMT
-            fn={fn}
-            a={a}
-            b={b}
-            error={error}
-            onResult={({ root, fxRoot, errorMsg }) =>
-              this.setState({ root, fxRoot, errorMsg })
-            }
-          >
-            {({ Calculate }) => (
+            <FormatLatex fn={fn} />
+            <div className="input-text">
               <div>
-                <button onClick={Calculate}>Calculate</button>
-                {errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}
+                <label>f(x): </label>
+                <input
+                  value={fn}
+                  onChange={(e) => this.setState({ fn: e.target.value })}
+                />
               </div>
-            )}
-          </FalsePositionMT>
 
-          <table>
-            <thead>
-              <tr>
-                <th>Iter</th>
-                <th>x</th>
-                <th>f(x)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {Array.isArray(root) && root.length > 0 ? (
-                root.map((item, index) => (
-                  <tr key={index}>
-                    <td>{index}</td>
-                    <td>{item.toFixed(6)}</td>
-                    <td>{fxRoot[index]?.toFixed(6)}</td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td
-                    colSpan="3"
-                    style={{ textAlign: "center", color: "#666" }}
-                  >
-                    ยังไม่มีข้อมูล
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+              <div>
+                <label>a: </label>
+                <input
+                  value={a}
+                  onChange={(e) => this.setState({ a: e.target.value })}
+                  style={{ width: "50px", marginRight: "10px" }}
+                />
+                <label>b: </label>
+                <input
+                  value={b}
+                  onChange={(e) => this.setState({ b: e.target.value })}
+                  style={{ width: "50px", marginRight: "10px" }}
+                />
+              </div>
+
+              <div>
+                <label>Error: </label>
+                <input
+                  value={error}
+                  onChange={(e) => this.setState({ error: e.target.value })}
+                />
+              </div>
+
+              <FalsePositionMT
+                fn={fn}
+                a={a}
+                b={b}
+                error={error}
+                onResult={({ root, fxRoot, errorMsg }) =>
+                  this.setState({ root, fxRoot, errorMsg })
+                }
+              >
+                {({ Calculate }) => (
+                  <div>
+                    <button onClick={Calculate}>Calculate</button>
+                    {errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}
+                  </div>
+                )}
+              </FalsePositionMT>
+
+              
+            </div>
+            <ResultTable roots={root} fxRoots={fxRoot} />
+          </div>
         </div>
       </div>
     );

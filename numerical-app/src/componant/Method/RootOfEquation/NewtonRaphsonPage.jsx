@@ -1,6 +1,10 @@
 import BackButton from "../../BackButton";
 import { Component } from "react";
 import NewtonRaphsonMT from "./NewtonRaphsonMT";
+import "../../GlobalStyle.css";
+import ResultTable from "../../ResultTable";
+import FormatLatex from "../../FormatLatex";
+
 export default class NewtonRaphsonPage extends Component {
   constructor(props) {
     super(props);
@@ -16,80 +20,57 @@ export default class NewtonRaphsonPage extends Component {
   render() {
     const { fn, xInitial, error, errorMsg, errorPer, xRoot } = this.state;
     return (
-      <div>
+      <div className="page">
         <BackButton />
-        <div>
-          <h1>NewtonRaphson</h1>
+        <div className="container">
+          <h1 style={{padding:"20px"}}>Newton Raphson</h1>
           <div>
-            {/* input */}
-            <div>
-              <label>x Initial</label>
-              <input
-                type="text"
-                value={xInitial}
-                onChange={(e) => this.setState({ xInitial: e.target.value })}
-              />
-            </div>
-            <div>
-              <label>f(x)</label>
-              <input
-                type="text"
-                value={fn}
-                onChange={(e) => this.setState({ fn: e.target.value })}
-              />
-            </div>
-            <div>
-              <label>error</label>
-              <input
-                type="text"
-                value={error}
-                onChange={(e) => this.setState({ error: e.target.value })}
-              />
-            </div>
+            <FormatLatex fn={fn} />
+            <div className="input-text">
+              {/* input */}
+              <div>
+                <label>X Initial </label>
+                <input
+                  type="text"
+                  value={xInitial}
+                  onChange={(e) => this.setState({ xInitial: e.target.value })}
+                />
+              </div>
+              <div>
+                <label>f(x) </label>
+                <input
+                  type="text"
+                  value={fn}
+                  onChange={(e) => this.setState({ fn: e.target.value })}
+                />
+              </div>
+              <div>
+                <label>Error </label>
+                <input
+                  type="text"
+                  value={error}
+                  onChange={(e) => this.setState({ error: e.target.value })}
+                />
+              </div>
 
-            <NewtonRaphsonMT
-              fn={fn}
-              xInitial={xInitial}
-              error={error}
-              onResult={({ xRoot, errorPer, errorMsg }) =>
-                this.setState({ xRoot, errorPer, errorMsg })
-              }
-            >
-              {({ Calculate }) => (
-                <div>
-                  <button onClick={Calculate}>Calculate</button>
-                  {errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}
-                </div>
-              )}
-            </NewtonRaphsonMT>
-            <table>
-              <thead>
-                <tr>
-                  <th>Iter</th>
-                  <th>x</th>
-                  <th>error</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Array.isArray(xRoot) && xRoot.length > 0 ? (
-                  xRoot.map((item, index) => (
-                    <tr key={index}>
-                      <td>{index}</td>
-                      <td>{Number(item).toFixed(6)}</td>
-                      <td>{Number(errorPer[index]).toFixed(6)}</td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td
-                      
-                    >
-                      ยังไม่มีข้อมูล
-                    </td>
-                  </tr>
+              <NewtonRaphsonMT
+                fn={fn}
+                xInitial={xInitial}
+                error={error}
+                onResult={({ xRoot, errorPer, errorMsg }) =>
+                  this.setState({ xRoot, errorPer, errorMsg })
+                }
+              >
+                {({ Calculate }) => (
+                  <div>
+                    <button onClick={Calculate}>Calculate</button>
+                    {errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}
+                  </div>
                 )}
-              </tbody>
-            </table>
+              </NewtonRaphsonMT>
+              
+            </div>
+            <ResultTable roots={xRoot} fxRoots={errorPer} />
           </div>
         </div>
       </div>

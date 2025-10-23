@@ -1,7 +1,7 @@
 import { Component } from "react";
 import BackButton from "../../BackButton";
-import { matrix, max } from "mathjs";
-
+import { matrix, max, det } from "mathjs";
+import "../../GlobalStyle.css";
 
 export default class CramerRulePage extends Component {
   constructor(props) {
@@ -24,8 +24,26 @@ export default class CramerRulePage extends Component {
   }
 
   Calculate = () => {
-  
-};
+    const Det_A = det(matrix(this.state.matrixA));
+    if (Det_A === 0) {
+      this.setState({ errorMsg: "เมทริกซ์ A มีค่า Determinant เป็นศูนย์" });
+      return;
+    }
+
+    const vars = [];
+    for (let col = 0; col < this.state.size_matrix; col++) {
+      const newMatrix = this.state.matrixA.map((row, r) =>
+        row.map((val, c) => (c === col ? this.state.matrixB[r] : val))
+      );
+      vars.push(det(matrix(newMatrix)) / Det_A);
+    }
+    // console.log(vars);
+    const resultAns = [];
+    for (let i = 0; i < vars.length; i++) {
+      resultAns[i] = vars[i];
+    }
+    this.setState({ matrix_result: resultAns, errorMsg: "" });
+  };
 
   handleGenerate = () => {
     if (this.state.size_matrix > 10) {
@@ -43,8 +61,6 @@ export default class CramerRulePage extends Component {
 
     const newMatrixB = Array.from({ length: size }, () => "");
     this.setState({ matrixB: newMatrixB, errorMsg: "" });
-
-    
   };
 
   handleChangeMatrixA = (r, c, value) => {
@@ -63,141 +79,120 @@ export default class CramerRulePage extends Component {
     this.setState({ matrixB: newMatrixB });
   };
 
-  
-
   render() {
-    const { size_matrix, matrixA, matrixB, matrixVariable, errorMsg } =
-      this.state;
+    const {
+      size_matrix,
+      matrixA,
+      matrixB,
+      matrixVariable,
+      matrix_result,
+      errorMsg,
+    } = this.state;
     return (
-      <div>
+      <div className="page">
         <BackButton />
-        <div>
-          <h1>CramerRule</h1>
-        </div>
-        <div>
-          <label>Matrix size : </label>
-          <input
-            type="text"
-            value={size_matrix}
-            onChange={(e) => this.setState({ size_matrix: e.target.value })}
-          />
-          <button onClick={this.handleGenerate}>Generate</button>
-        </div>
-        <div>{errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}</div>
+        <div className="container">
+          <h1 style={{ padding: "20px" }}>Cramer's Rule</h1>
 
-        {/* Show MatrixInput */}
-        <div style={{ display: "flex", gap: "50px", marginTop: "20px" }}>
-          <div>
-            <p style={{ display: "block", alignItems: "center" }}>[A]</p>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: `repeat(${size_matrix}, 60px)`,
-                gap: "20px",
-                marginTop: "15px",
-              }}
-            >
-              {matrixA.map((row, r) =>
-                row.map((val, c) => (
+          <div className="input-text">
+            <label>Matrix size : </label>
+            <input
+              type="text"
+              value={size_matrix}
+              onChange={(e) => this.setState({ size_matrix: e.target.value })}
+            />
+            <button onClick={this.handleGenerate}>Generate</button>
+          </div>
+          <div>{errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}</div>
+
+          {/* Show MatrixInput */}
+          <div className="matrix-container">
+            {/* ---------------- [A] ---------------- */}
+            <div className="matrix-box">
+              <p className="matrix-title">[A]</p>
+              <div
+                className="matrix-grid"
+                style={{
+                  gridTemplateColumns: `repeat(${size_matrix}, 60px)`,
+                }}
+              >
+                {matrixA.map((row, r) =>
+                  row.map((val, c) => (
+                    <input
+                      className="matrix-input"
+                      key={`A-${r}-${c}`}
+                      type="number"
+                      value={val}
+                      placeholder={`a${r + 1}${c + 1}`}
+                      onChange={(e) =>
+                        this.handleChangeMatrixA(r, c, e.target.value)
+                      }
+                    />
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* ---------------- × ---------------- */}
+            <span className="symbol">×</span>
+
+            {/* ---------------- {X} ---------------- */}
+            <div className="vector-box">
+              <p className="vector-title">{"{X}"}</p>
+              <div className="vector-grid">
+                {matrixVariable.map((val, r) => (
                   <input
-                    style={{
-                      width: "50px",
-                      height: "50px",
-                      borderRadius: "5px",
-                    }}
-                    key={`A-${r}-${c}`}
+                    key={`X-${r}`}
+                    type="number"
+                    className="vector-input"
+                    value={val}
+                    placeholder={`x${r + 1}`}
+                    disabled
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* ---------------- = ---------------- */}
+            <span className="symbol">=</span>
+
+            {/* ---------------- {B} ---------------- */}
+            <div className="vector-box">
+              <p className="vector-title">{"{B}"}</p>
+              <div className="vector-grid">
+                {matrixB.map((val, r) => (
+                  <input
+                    className="vector-input"
+                    key={`B-${r}`}
                     type="number"
                     value={val}
-                    placeholder={`a${r + 1}${c + 1}`}
+                    placeholder={`b${r + 1}`}
                     onChange={(e) =>
-                      this.handleChangeMatrixA(r, c, e.target.value)
+                      this.handleChangeMatrixB(r, e.target.value)
                     }
                   />
-                ))
-              )}
+                ))}
+              </div>
             </div>
           </div>
 
+          {/* Button Calculate */}
           <div>
-            <p style={{ display: "block", alignItems: "center" }}>{"{X}"}</p>
-            <div
-              style={{
-                display: "grid",
-                gap: "20px",
-                marginTop: "15px",
-              }}
-            >
-              {matrixVariable.map((val, r) => (
-                <input
-                  style={{ width: "50px", height: "50px", borderRadius: "5px" }}
-                  key={`X-${r}`}
-                  type="number"
-                  value={val}
-                  placeholder={`x${r}`}
-                  disabled
-                />
-              ))}
-            </div>
+            <button onClick={this.Calculate}>Calculate</button>
           </div>
-
+          {/* Show Result */}
           <div>
-            <p style={{ display: "block", alignItems: "center" }}>{"{B}"}</p>
-            <div
-              style={{
-                display: "grid",
-                gap: "20px",
-                marginTop: "15px",
-              }}
-            >
-              {matrixB.map((val, r) => (
-                <input
-                  style={{ width: "50px", height: "50px", borderRadius: "5px" }}
-                  key={`B-${r}`}
-                  type="number"
-                  value={val}
-                  placeholder={`b${r}`}
-                  onChange={(e) => this.handleChangeMatrixB(r, e.target.value)}
-                />
-              ))}
-            </div>
+            {matrix_result.length > 0 && (
+              <div>
+                <h2>Result:</h2>
+                {matrix_result.map((val, r) => (
+                  <p key={`result-${r}`}>
+                    x{r + 1} = {val}
+                  </p>
+                ))}
+              </div>
+            )}
           </div>
-        </div>
-        
-
-        {/* Button Calculate */}
-        <div>
-          <button onClick={this.Calculate}>Calculate</button>
-        </div>
-        {/* Show Result */}
-        <div>
-          <table>
-            <thead>
-              <tr>
-                <th>Iter</th>
-                <th>xK</th>
-                <th>error</th>
-              </tr>
-            </thead>
-            <tbody>
-              {this.state.matrix_result.length > 0 ? (
-                this.state.matrix_result.map((item, index) => (
-                  <tr key={index}>
-                    <td>{index}</td>
-                    <td>
-                      {item.map((val) => Number(val).toFixed(6)).join(", ")}
-                    </td>
-                    <td>
-                      {Number(this.state.matrix_error[index]).toExponential(2)}
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={3}>ยังไม่มีข้อมูล</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
         </div>
       </div>
     );
