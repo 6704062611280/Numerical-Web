@@ -1,5 +1,8 @@
 import { Component } from "react";
 import BackButton from "../../BackButton";
+import { BlockMath } from "react-katex";
+import "katex/dist/katex.min.css";
+import "../../GlobalStyle.css";
 
 export default class LagrangeInterpolationPage extends Component {
   constructor(props) {
@@ -15,59 +18,44 @@ export default class LagrangeInterpolationPage extends Component {
     };
   }
 
-  // -------------------------------------
-  // ฟังก์ชันหลัก: คำนวณ Lagrange Interpolation
-  // -------------------------------------
+  // 🧮 คำนวณ Lagrange Interpolation
   Calculate = () => {
     const { table_x, table_Fx, x_value } = this.state;
-
-    // แปลงค่าเป็นตัวเลข
     const x = table_x.map(Number);
     const fx = table_Fx.map(Number);
     const x_target = Number(x_value);
 
-    // ตรวจสอบการกรอกข้อมูล
     if (x.some(isNaN) || fx.some(isNaN) || isNaN(x_target)) {
       this.setState({ errorMsg: "⚠️ กรุณากรอกข้อมูลให้ครบทุกช่อง" });
       return;
     }
 
     const n = x.length;
-    let result = 0; // ค่าที่จะได้จาก f(x_target)
-    let terms = []; // สำหรับเก็บสมการแต่ละเทอมของ Lagrange
+    let result = 0;
+    let latexEquation = `L(x) = `;
 
-    // วนคำนวณตามสูตร Lagrange Polynomial
     for (let i = 0; i < n; i++) {
-      // คำนวณตัวส่วนและตัวประกอบของ L_i(x)
       let Li = 1;
-      let termText = "";
-
+      let termLatex = `${fx[i]}`;
       for (let j = 0; j < n; j++) {
-        if (j !== i) {
+        if (i !== j) {
           Li *= (x_target - x[j]) / (x[i] - x[j]);
-          termText += `((x - ${x[j]}) / (${x[i]} - ${x[j]}))`;
+          termLatex += ` \\left( \\frac{x - ${x[j]}}{${x[i]} - ${x[j]}} \\right)`;
         }
       }
-
-      // คูณด้วย f(x_i)
       result += fx[i] * Li;
-      terms.push(`${fx[i]} * ${termText}`);
+      latexEquation += termLatex;
+      if (i < n - 1) latexEquation += " + ";
     }
 
-    // สร้างสมการเป็นข้อความ
-    const polynomial = "L(x) = " + terms.join(" + ");
-
-    // อัปเดตผลลัพธ์ใน state
     this.setState({
-      resultText: polynomial,
+      resultText: latexEquation,
       resultValue: result,
       errorMsg: "",
     });
   };
 
-  // -------------------------------------
-  // ฟังก์ชันสร้างช่องกรอกข้อมูลใหม่
-  // -------------------------------------
+  // ⚙️ สร้างช่องกรอกข้อมูลใหม่
   handleGenerate = () => {
     const size = parseInt(this.state.size_table);
     if (size > 10 || size < 2) {
@@ -84,9 +72,7 @@ export default class LagrangeInterpolationPage extends Component {
     });
   };
 
-  // -------------------------------------
-  // ฟังก์ชันอัปเดตค่าในตาราง X และ f(X)
-  // -------------------------------------
+  // 🧩 อัปเดตค่าในตาราง
   handleChangeTable_X = (r, value) => {
     const newTable_x = [...this.state.table_x];
     newTable_x[r] = value;
@@ -99,9 +85,6 @@ export default class LagrangeInterpolationPage extends Component {
     this.setState({ table_Fx: newTable_Fx });
   };
 
-  // -------------------------------------
-  // ส่วนแสดงผลหน้าจอ
-  // -------------------------------------
   render() {
     const {
       size_table,
@@ -120,7 +103,7 @@ export default class LagrangeInterpolationPage extends Component {
           <h1 style={{ padding: "20px" }}>Lagrange Interpolation</h1>
 
           {/* ส่วนควบคุมจำนวนจุดข้อมูล */}
-          <div style={{ marginBottom: "20px" }}>
+          <div className="input-text">
             <label>Number of points: </label>
             <input
               type="number"
@@ -131,8 +114,8 @@ export default class LagrangeInterpolationPage extends Component {
             <button onClick={this.handleGenerate}>Generate</button>
           </div>
 
-          {/* ช่องกรอก x ที่ต้องการหาค่า f(x) */}
-          <div style={{ marginBottom: "20px" }}>
+          {/* ช่องกรอก x ที่ต้องการหา f(x) */}
+          <div className="input-text">
             <label>Find f(x) at x = </label>
             <input
               type="number"
@@ -146,42 +129,32 @@ export default class LagrangeInterpolationPage extends Component {
           {errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}
 
           {/* ตารางกรอกค่า X และ f(X) */}
-          <div style={{ display: "flex", gap: "50px" }}>
-            <div>
-              <p>
-                <b>X</b>
-              </p>
+          <div className="table-container" style={{ marginTop: "20px" }}>
+            <div className="table-column">
+              <p><b>X</b></p>
               <div style={{ display: "grid" }}>
                 {table_x.map((val, r) => (
                   <input
                     key={`x-${r}`}
                     type="number"
                     value={val}
-                    onChange={(e) =>
-                      this.handleChangeTable_X(r, e.target.value)
-                    }
+                    onChange={(e) => this.handleChangeTable_X(r, e.target.value)}
                     placeholder={`x${r}`}
-                    style={{ width: "70px", marginBottom: "10px" }}
                   />
                 ))}
               </div>
             </div>
 
-            <div>
-              <p>
-                <b>f(x)</b>
-              </p>
+            <div className="table-column">
+              <p><b>f(x)</b></p>
               <div style={{ display: "grid" }}>
                 {table_Fx.map((val, r) => (
                   <input
                     key={`fx-${r}`}
                     type="number"
                     value={val}
-                    onChange={(e) =>
-                      this.handleChangeTable_Fx(r, e.target.value)
-                    }
+                    onChange={(e) => this.handleChangeTable_Fx(r, e.target.value)}
                     placeholder={`f(x${r})`}
-                    style={{ width: "70px", marginBottom: "10px" }}
                   />
                 ))}
               </div>
@@ -198,20 +171,20 @@ export default class LagrangeInterpolationPage extends Component {
             <div
               style={{
                 marginTop: "30px",
-                backgroundColor: "#f0f0f0",
+                
                 padding: "15px",
                 borderRadius: "10px",
               }}
             >
               <h3>ผลลัพธ์สมการ (Lagrange Form):</h3>
-              <p style={{ fontFamily: "monospace" }}>{resultText}</p>
+              <BlockMath math={resultText} />
 
               {resultValue !== null && (
                 <>
                   <h3>ค่าที่คำนวณได้:</h3>
-                  <p>
-                    f({x_value}) = <b>{resultValue.toFixed(4)}</b>
-                  </p>
+                  <BlockMath
+                    math={`f(${x_value}) = ${resultValue.toFixed(4)}`}
+                  />
                 </>
               )}
             </div>

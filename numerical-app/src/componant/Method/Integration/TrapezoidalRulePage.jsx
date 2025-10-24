@@ -1,30 +1,29 @@
-import BackButton from "../../BackButton"; // ปุ่มย้อนกลับไปหน้าเดิม
+import BackButton from "../../BackButton";
 import { Component } from "react";
-import { evaluate } from "mathjs"; // ใช้สำหรับคำนวณสมการ fx
+import { evaluate } from "mathjs";
+import { BlockMath } from "react-katex";
+import "katex/dist/katex.min.css";
+import FormatIntegration from "../../FormatIntegration";
 
 export default class TrapezoidalRulePage extends Component {
   constructor(props) {
     super(props);
-    // กำหนดค่าเริ่มต้นของ state
     this.state = {
-      fx: "(4x-1)^(1/3)", // สมการฟังก์ชัน f(x)
-      a: 1, // ค่าขอบล่าง
-      b: 2, // ค่าขอบบน
-      result: null, // ผลลัพธ์การหาพื้นที่
-      errorMsg: "", // ข้อความ error (ถ้ามี)
+      fx: "4x^3 + 5x^2 + x",
+      a: 2,
+      b: 8,
+      result: null,
+      steps: [],
+      errorMsg: "",
     };
   }
 
-  // ฟังก์ชันหลักคำนวณ Trapezoidal Rule
   Calculate = () => {
     try {
       const { fx, a, b } = this.state;
-
-      // แปลง string เป็นตัวเลข
       const A = parseFloat(a);
       const B = parseFloat(b);
 
-      // ตรวจสอบค่าว่าง
       if (isNaN(A) || isNaN(B)) {
         this.setState({
           errorMsg: "กรุณากรอกค่า a และ b ให้ถูกต้อง",
@@ -33,20 +32,25 @@ export default class TrapezoidalRulePage extends Component {
         return;
       }
 
-      // คำนวณ f(a) และ f(b)
       const Fa = evaluate(fx.replace(/x/g, `(${A})`));
       const Fb = evaluate(fx.replace(/x/g, `(${B})`));
+      const h = B - A;
+      const area = (h / 2) * (Fa + Fb);
 
-      // สูตร Trapezoidal Rule: (b - a)/2 * [f(a) + f(b)]
-      const area = ((B - A) / 2) * (Fa + Fb);
+      const steps = [
+        `I = \\int_{${A}}^{${B}} f(x)\\,dx = \\int_{${A}}^{${B}} (${fx})\\,dx`,
+        `f(${A}) = ${Fa.toFixed(6)}`,
+        `f(${B}) = ${Fb.toFixed(6)}`,
+        `h = ${B} - ${A} = ${h}`,
+        `I = \\frac{${h}}{2} [${Fa.toFixed(6)} + ${Fb.toFixed(6)}] = ${area.toFixed(6)}`,
+      ];
 
-      // อัปเดตผลลัพธ์กลับไปใน state
       this.setState({
         result: area,
+        steps,
         errorMsg: "",
       });
     } catch (error) {
-      // จัดการ error กรณี fx ไม่ถูกต้อง
       this.setState({
         errorMsg: "รูปแบบสมการไม่ถูกต้อง",
         result: null,
@@ -55,21 +59,16 @@ export default class TrapezoidalRulePage extends Component {
   };
 
   render() {
-    const { fx, a, b, result, errorMsg } = this.state;
+    const { fx, a, b, result, steps, errorMsg } = this.state;
 
     return (
       <div className="page">
         <BackButton />
         <div className="container">
-          {/* ส่วนหัวเรื่อง */}
           <h1 style={{ padding: "20px" }}>Trapezoidal Rule</h1>
+          <FormatIntegration fn={fx} a={a} b={b} />
 
-          {/* กล่อง input */}
-          <div
-            className="input-text"
-            style={{display}}
-          >
-            {/* fx input */}
+          <div className="input-text">
             <label>ฟังก์ชัน f(x)</label>
             <input
               type="text"
@@ -78,7 +77,6 @@ export default class TrapezoidalRulePage extends Component {
               placeholder="ใส่สมการ เช่น x^2 + 3x"
             />
 
-            {/* a input */}
             <label>ค่า a (ขอบล่าง)</label>
             <input
               type="number"
@@ -86,7 +84,6 @@ export default class TrapezoidalRulePage extends Component {
               onChange={(e) => this.setState({ a: e.target.value })}
             />
 
-            {/* b input */}
             <label>ค่า b (ขอบบน)</label>
             <input
               type="number"
@@ -94,18 +91,22 @@ export default class TrapezoidalRulePage extends Component {
               onChange={(e) => this.setState({ b: e.target.value })}
             />
 
-            {/* ปุ่มคำนวณ */}
             <button style={{ marginTop: "10px" }} onClick={this.Calculate}>
               Calculate
             </button>
           </div>
 
-          {/* แสดงผลลัพธ์ */}
           {errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}
+
           {result !== null && (
             <div style={{ marginTop: "20px" }}>
-              <h3>ผลลัพธ์:</h3>
-              <p>∫ f(x) dx ≈ {result.toFixed(6)}</p>
+              <h3>ขั้นตอนการคำนวณ:</h3>
+              {steps.map((line, index) => (
+                <BlockMath key={index} math={line} />
+              ))}
+
+              <h3>✅ ผลลัพธ์สุดท้าย:</h3>
+              <BlockMath math={`I \\approx ${result.toFixed(6)}`} />
             </div>
           )}
         </div>

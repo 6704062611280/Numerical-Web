@@ -1,6 +1,8 @@
 import { Component } from "react";
 import BackButton from "../../BackButton";
-import { matrix, max } from "mathjs";
+import { BlockMath } from "react-katex";
+import "katex/dist/katex.min.css";
+import "../../GlobalStyle.css";
 
 export default class GaussJordanEliminationPage extends Component {
   constructor(props) {
@@ -15,21 +17,30 @@ export default class GaussJordanEliminationPage extends Component {
       matrixVariable: ["", "", ""],
       matrixB: [400, 400, 400],
       errorMsg: "",
-      maxIteration: 100,
-      tolerance: 0.000001,
       matrix_result: [],
-      matrix_error: [],
+      steps: [],
     };
   }
+
+  matrixToKaTeX = (A, B) => {
+    // แปลง matrix + vector เป็น string KaTeX
+    const n = A.length;
+    let lines = [];
+    for (let i = 0; i < n; i++) {
+      lines.push([...A[i], B[i]].map((v) => Number(v).toFixed(2)).join(" & "));
+    }
+    return `\\begin{bmatrix} ${lines.join(" \\\\ ")} \\end{bmatrix}`;
+  };
 
   Calculate = () => {
     const n = this.state.size_matrix;
     const A = this.state.matrixA.map((row) => [...row]);
     const B = [...this.state.matrixB];
+    const steps = [];
 
     // Gauss-Jordan Elimination
     for (let k = 0; k < n; k++) {
-      // ทำให้ pivot เป็น 1
+      // ทำ pivot ให้ = 1
       const pivot = A[k][k];
       if (pivot === 0) {
         this.setState({
@@ -37,88 +48,98 @@ export default class GaussJordanEliminationPage extends Component {
         });
         return;
       }
-      for (let j = 0; j < n; j++) {
-        A[k][j] /= pivot;
-      }
+      for (let j = 0; j < n; j++) A[k][j] /= pivot;
       B[k] /= pivot;
 
-      // ทำให้ทุกตัวใน column k ของแถวอื่น = 0
+      steps.push(
+        `R_{${k + 1}} \\Rightarrow R_{${
+          k + 1
+        }} / ${pivot} : ${this.matrixToKaTeX(A, B)}`
+      );
+
+      // ทำให้ column k ของแถวอื่น = 0
       for (let i = 0; i < n; i++) {
         if (i !== k) {
           const factor = A[i][k];
-          for (let j = 0; j < n; j++) {
-            A[i][j] -= factor * A[k][j];
-          }
+          for (let j = 0; j < n; j++) A[i][j] -= factor * A[k][j];
           B[i] -= factor * B[k];
+          steps.push(
+            `R_{${i + 1}} \\Rightarrow R_{${i + 1}} - (${factor.toFixed(
+              3
+            )}) R_{${k + 1}} : ${this.matrixToKaTeX(A, B)}`
+          );
         }
       }
     }
 
-    // ตอนนี้ B คือคำตอบของ x1, x2, ..., xn
+    this.setState({ matrix_result: B, steps, errorMsg: "" });
+  };
+
+  handleGenerate = () => {
+    const size = parseInt(this.state.size_matrix);
+    if (size > 10) {
+      this.setState({ errorMsg: "ขนาดเมทริกซ์ต้องไม่เกิน 10" });
+      return;
+    }
+    const newMatrixA = Array.from({ length: size }, () =>
+      Array.from({ length: size }, () => "")
+    );
+    const newMatrixB = Array.from({ length: size }, () => "");
+    const newMatrixVariable = Array.from({ length: size }, () => "");
     this.setState({
-      matrix_result: [B], // เก็บเป็น array of array เพื่อ render
-      matrix_error: new Array(1).fill(0),
+      matrixA: newMatrixA,
+      matrixB: newMatrixB,
+      matrixVariable: newMatrixVariable,
+      steps: [],
       errorMsg: "",
     });
   };
 
-  handleGenerate = () => {
-    if (this.state.size_matrix > 10) {
-      this.setState({ errorMsg: "ขนาดเมทริกซ์ต้องไม่เกิน 10" });
-      return;
-    }
-    const size = parseInt(this.state.size_matrix);
-    const newMatrixA = Array.from({ length: size }, () =>
-      Array.from({ length: size }, () => "")
-    );
-    this.setState({ matrixA: newMatrixA });
-
-    const newMatrixVariable = Array.from({ length: size }, () => "");
-    this.setState({ matrixVariable: newMatrixVariable });
-
-    const newMatrixB = Array.from({ length: size }, () => "");
-    this.setState({ matrixB: newMatrixB, errorMsg: "" });
-  };
-
   handleChangeMatrixA = (r, c, value) => {
-    const newMatrixA = this.state.matrixA.map((row, rowIndex) =>
-      row.map((col, colIndex) =>
-        rowIndex === r && colIndex == c ? value : col
-      )
+    const newMatrixA = this.state.matrixA.map((row, ri) =>
+      row.map((col, ci) => (ri === r && ci === c ? value : col))
     );
     this.setState({ matrixA: newMatrixA });
   };
 
   handleChangeMatrixB = (r, value) => {
-    const newMatrixB = this.state.matrixB.map((val, index) =>
-      index === r ? value : val
+    const newMatrixB = this.state.matrixB.map((val, i) =>
+      i === r ? value : val
     );
     this.setState({ matrixB: newMatrixB });
   };
 
   render() {
-    const { size_matrix, matrixA, matrixB, matrixVariable, errorMsg } =
-      this.state;
+    const {
+      size_matrix,
+      matrixA,
+      matrixB,
+      matrixVariable,
+      errorMsg,
+      steps,
+      matrix_result,
+    } = this.state;
+
     return (
       <div className="page">
         <BackButton />
         <div className="container">
-          <h1 style={{ padding: "20px" }}>Gauss-Jordan Eliminate Method</h1>
-
+          <h1>Gauss-Jordan Elimination</h1>
+          <div style={{ margin:"0 auto", textAlign:"center"}}>
           <div className="input-text">
-            <label>Matrix size : </label>
+            <label>Matrix size: </label>
             <input
-              type="text"
+              type="number"
               value={size_matrix}
               onChange={(e) => this.setState({ size_matrix: e.target.value })}
             />
             <button onClick={this.handleGenerate}>Generate</button>
           </div>
-          <div>{errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}</div>
 
-          {/* Show MatrixInput */}
+          {errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}
+
+          {/* Matrix Input */}
           <div className="matrix-container">
-            {/* ---------------- [A] ---------------- */}
             <div className="matrix-box">
               <p className="matrix-title">[A]</p>
               <div
@@ -130,9 +151,9 @@ export default class GaussJordanEliminationPage extends Component {
                 {matrixA.map((row, r) =>
                   row.map((val, c) => (
                     <input
-                      className="matrix-input"
                       key={`A-${r}-${c}`}
                       type="number"
+                      className="matrix-input"
                       value={val}
                       placeholder={`a${r + 1}${c + 1}`}
                       onChange={(e) =>
@@ -144,10 +165,8 @@ export default class GaussJordanEliminationPage extends Component {
               </div>
             </div>
 
-            {/* ---------------- × ---------------- */}
             <span className="symbol">×</span>
 
-            {/* ---------------- {X} ---------------- */}
             <div className="vector-box">
               <p className="vector-title">{"{X}"}</p>
               <div className="vector-grid">
@@ -164,18 +183,16 @@ export default class GaussJordanEliminationPage extends Component {
               </div>
             </div>
 
-            {/* ---------------- = ---------------- */}
             <span className="symbol">=</span>
 
-            {/* ---------------- {B} ---------------- */}
             <div className="vector-box">
               <p className="vector-title">{"{B}"}</p>
               <div className="vector-grid">
                 {matrixB.map((val, r) => (
                   <input
-                    className="vector-input"
                     key={`B-${r}`}
                     type="number"
+                    className="vector-input"
                     value={val}
                     placeholder={`b${r + 1}`}
                     onChange={(e) =>
@@ -186,44 +203,28 @@ export default class GaussJordanEliminationPage extends Component {
               </div>
             </div>
           </div>
-          
-          {/* Button Calculate */}
-          <div>
-            <button onClick={this.Calculate}>Calculate</button>
+                
+          <button onClick={this.Calculate} style={{ marginTop: "10px" }}>
+            Calculate
+          </button>
           </div>
-          {/* Show Result */}
-          <div>
-            <table>
-              <thead>
-                <tr>
-                  <th>Iter</th>
-                  <th>xK</th>
-                  <th>error</th>
-                </tr>
-              </thead>
-              <tbody>
-                {this.state.matrix_result.length > 0 ? (
-                  this.state.matrix_result.map((item, index) => (
-                    <tr key={index}>
-                      <td>{index}</td>
-                      <td>
-                        {item.map((val) => Number(val).toFixed(6)).join(", ")}
-                      </td>
-                      <td>
-                        {Number(this.state.matrix_error[index]).toExponential(
-                          2
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={3}>ยังไม่มีข้อมูล</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+
+          {/* แสดงขั้นตอนแบบ KaTeX */}
+          {steps.length > 0 && (
+            <div style={{ marginTop: "20px" }}>
+              <h3>ขั้นตอนการคำนวณ:</h3>
+              {steps.map((line, i) => (
+                <BlockMath key={i} math={line} />
+              ))}
+              <h3>✅ ผลลัพธ์สุดท้าย:</h3>
+              {matrix_result.map((val, i) => (
+                <BlockMath
+                  key={i}
+                  math={`x_{${i + 1}} \\approx ${val.toFixed(6)}`}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     );

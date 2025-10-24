@@ -246,7 +246,7 @@ export default class ConjugateGradientPage extends Component {
           {/* Output table */}
           <div style={{ marginTop: "20px" }}>
             <h2>Iteration Results</h2>
-            <table border="1" cellPadding="5">
+            <table className="nice-table">
               <thead>
                 <tr>
                   <th>Iter</th>
@@ -260,7 +260,7 @@ export default class ConjugateGradientPage extends Component {
                     <tr key={idx}>
                       <td>{idx + 1}</td>
                       <td>{xIter.map((v) => v.toFixed(6)).join(", ")}</td>
-                      <td>{this.state.matrix_error[idx].toExponential(2)}</td>
+                      <td>{this.state.matrix_error[idx].toFixed(6)}</td>
                     </tr>
                   ))
                 ) : (

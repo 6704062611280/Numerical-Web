@@ -224,12 +224,14 @@ export default class GaussSeidelPage extends Component {
             <button onClick={this.Calculate}>Calculate</button>
           </div>
           {/* Show Result */}
-          <div>
-            <table>
+          <div style={{ width: "800px" }}>
+            <table className="nice-table">
               <thead>
                 <tr>
                   <th>Iter</th>
-                  <th>xK</th>
+                  <th>
+                    x<sub>k</sub>
+                  </th>
                   <th>error</th>
                 </tr>
               </thead>
@@ -238,13 +240,32 @@ export default class GaussSeidelPage extends Component {
                   this.state.matrix_result.map((item, index) => (
                     <tr key={index}>
                       <td>{index}</td>
+                      {/* xK stacked */}
                       <td>
-                        {item.map((val) => Number(val).toFixed(6)).join(", ")}
+                        {item.map((val, idx) => (
+                          <div key={idx}>
+                            x<sub>{idx + 1}</sub> = {val.toFixed(2)}
+                          </div>
+                        ))}
                       </td>
+                      {/* error stacked */}
                       <td>
-                        {Number(this.state.matrix_error[index]).toExponential(
-                          2
-                        )}
+                        {item.map((val, idx) => {
+                          const xOld =
+                            index === 0
+                              ? val
+                              : this.state.matrix_result[index - 1][idx];
+                          const err =
+                            index === 0
+                              ? Infinity
+                              : Math.abs((val - xOld) / val);
+                          return (
+                            <div key={idx}>
+                              e<sub>{idx + 1}</sub> ={" "}
+                              {err === Infinity ? "∞" : err.toFixed(6)}
+                            </div>
+                          );
+                        })}
                       </td>
                     </tr>
                   ))

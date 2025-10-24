@@ -20,7 +20,23 @@ html, body {
 
 .input-text input {
   width: 80px;
-  padding: 5px 8px;
+  padding: 8px 10px; 
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.only-input {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;   /* จัดให้อยู่ตรงกลางแนวนอน */
+  align-items: center;       /* จัดให้อยู่ตรงกลางแนวตั้ง */
+  gap: 10px;                 /* ระยะห่างระหว่าง item แต่ละตัว */
+  margin-top: 20px;          /* เว้นด้านบนหน่อย */
+}
+
+.only-input input{
+  width: 320px;
+  padding: 8px 10px; 
   border: 1px solid #ccc;
   border-radius: 6px;
 }
@@ -36,9 +52,7 @@ button {
   transition: 0.2s;
 }
 
-.input-text label {
-  font-weight: bold;
-}
+
 
 .input-text div {
     margin-bottom: 10px;
@@ -107,6 +121,30 @@ button {
   outline: none;
 }
 
+.table-container {
+  
+  display: flex;
+  padding: 20px;
+  width: 200px;
+  margin: 30px auto;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  justify-content: center;
+  align-items: center;
+}
+
+.table-column {
+    justify-items: center;
+    padding: 2px;
+    /* border: 1px solid red; */
+}
+.table-container input {
+    width: 80px;
+    padding: 5px 8px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    
+}
 
 
 
@@ -164,3 +202,39 @@ button {
 .nice-table td:first-child {
     width: 60px;
 }
+
+input::placeholder {
+  color: #888; /* 🔹 สีเทาอ่อน */
+  font-style: italic; /* ตัวเอียงให้ดูเด่นขึ้น */
+  opacity: 0.5; /* ให้สีชัด (บาง browser ลดความเข้มโดย default) */
+}
+
+/* สำหรับทุก select element */
+select {
+  padding: 8px 10px;          /* ระยะขอบด้านใน */
+  border: 1px solid #ccc;     /* ขอบสีเทาอ่อน */
+  border-radius: 5px;         /* มุมโค้งมน */
+  background-color: #fff;     /* สีพื้นหลัง */
+  font-size: 16px;            /* ขนาดตัวอักษร */
+  margin-bottom: 15px;        /* ระยะห่างด้านล่าง */
+  transition: all 0.2s ease; /* เพิ่ม effect เล็กน้อย */
+  outline: none;              /* เอา outline เวลา focus ออก */
+}
+
+/* เวลา hover หรือ focus */
+select:hover,
+select:focus {
+  border-color: #007bff;     /* เปลี่ยนสีขอบ */
+  box-shadow: 0 0 5px rgba(0,123,255,0.5); /* เงาเบา ๆ */
+  cursor: pointer;            /* เปลี่ยน cursor */
+}
+
+/* ปรับให้เหมือน input text */
+
+
+input[type="text"]:focus,
+input[type="number"]:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0,123,255,0.5);
+}
+

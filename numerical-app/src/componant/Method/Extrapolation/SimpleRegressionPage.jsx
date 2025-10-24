@@ -158,8 +158,8 @@ export default class SimpleRegressionPage extends Component {
           </div>
 
           {/* ตาราง X / f(X) */}
-          <div style={{ display: "flex", gap: "50px" }}>
-            <div style={{ display: "grid" }}>
+          <div className="table-container">
+            <div className="table-column">
               <p>
                 <b>X</b>
               </p>
