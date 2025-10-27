@@ -26,7 +26,7 @@ class OnePointMT extends Component {
     } catch (e) {
       const errorMsg = "Error: Invalid function";
       if (this.props.onResult)
-        this.props.onResult({ xRoot: [], errorPer: [], errorMsg });
+        this.props.onResult({ xRoot: [], ePer: [], errorMsg });
       return;
     }
 
@@ -39,7 +39,7 @@ class OnePointMT extends Component {
     if (isNaN(xStart) || isNaN(ErrorCheck)) {
       errorMsg = "กรุณาใส่ค่าเริ่มต้นและค่า Error ให้ถูกต้อง";
       if (this.props.onResult)
-        this.props.onResult({ xRoot: [], errorPer: [], errorMsg });
+        this.props.onResult({ xRoot: [], ePer: [], errorMsg });
       return;
     }
 
@@ -47,24 +47,24 @@ class OnePointMT extends Component {
     const Max_count = 10000;
 
     let xNew = f(xStart);
-    let ePer = Math.abs((xNew - xStart) / xNew);
+    let eePer = Math.abs((xNew - xStart) / xNew);
 
     const xNew_Array = [xNew];
-    const ePer_Array = [ePer];
+    const ePer_Array = [eePer];
 
-    while (ePer >= ErrorCheck && count < Max_count) {
+    while (eePer >= ErrorCheck && count < Max_count) {
       xStart = xNew;
       xNew = f(xStart);
-      ePer = Math.abs((xNew - xStart) / xNew);
+      eePer = Math.abs((xNew - xStart) / xNew);
 
       xNew_Array.push(xNew);
-      ePer_Array.push(ePer);
+      ePer_Array.push(eePer);
 
       count += 1;
     }
 
     if (this.props.onResult)
-      this.props.onResult({ xRoot: xNew_Array, errorPer: ePer_Array, errorMsg });
+      this.props.onResult({ xRoot: xNew_Array, ePer: ePer_Array, errorMsg });
   };
 
   render() {

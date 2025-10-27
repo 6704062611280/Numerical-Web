@@ -25,6 +25,7 @@ class BisectionMT extends Component {
     let f;
     let mid;
     let count = 0;
+    let Max_count = 10000;
 
     let errorMsg = "";
 
@@ -48,22 +49,42 @@ class BisectionMT extends Component {
       return;
     }
 
-    
+    //first iter
+    mid = (left + right) / 2;
+    let stepX =[mid];
+    let stepFx = [f(mid)];
+    if (f(left) * f(mid) < 0) {
+        right = mid;
+      } else {
+        left = mid;
+      }
+    let errorValue = ["N/A"];
+    let oldMid = mid;
 
-    let stepX = [left, right];
-    let stepFx = [f(left), f(right)];
-
-    while ((right - left) / 2 > ErrorCheck) {
+    while ( oldMid < ErrorCheck) {
       mid = (left + right) / 2;
       stepX.push(mid);
       stepFx.push(f(mid));
 
+      errorValue.push(Math.abs((mid - oldMid)/mid));
+      // console.log("mid =  ",mid);
+      //   console.log("old Mid = ",oldMid);
       
+      
+      if(count > Max_count){
+        errorMsg = "Exceeded maximum 10,000 iterations";
+        break;
+      }
+
       if (f(mid) === 0) {
 
         break;
       }
-
+      
+      if (Math.abs((mid - oldMid)/mid) < ErrorCheck) {
+        
+        break;
+      }
 
       if (f(left) * f(mid) < 0) {
         right = mid;
@@ -73,9 +94,11 @@ class BisectionMT extends Component {
       // if(Math.abs(f(mid)) <= ErrorCheck){
       //   break;
       // }
+      // console.log(errorValue[count])
+      oldMid = mid;
       count += 1;
     }
-    if(this.props.onResult) this.props.onResult({root:stepX,fxRoot:stepFx,errorMsg})
+    if(this.props.onResult) this.props.onResult({root:stepX,fxRoot:stepFx,ePer:errorValue,errorMsg})
   }
   render() {
     return this.props.children({ Calculate: this.Calculate })

@@ -8,10 +8,10 @@ export default class FormatLatex extends Component {
   };
 
   render() {
-    const { fn } = this.props;
+    const { fn,text } = this.props;
     return (
       <h1 className="math-text">
-        <BlockMath math={`f(x) = ${this.formatToLaTeX(fn)}`} />
+        <BlockMath math={`${text} = ${this.formatToLaTeX(fn)}`} />
       </h1>
     );
   }

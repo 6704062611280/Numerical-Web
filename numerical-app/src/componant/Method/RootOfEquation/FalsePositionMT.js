@@ -1,13 +1,13 @@
-import { parse } from "mathjs";
+import { count, parse } from "mathjs";
 import { Component } from "react";
 
 function convertPowerToNthRoot(input) {  //Fixed fn before parse
-  let fixed = input.replace(/(\d)([a-zA-Z])/g, "$1*$2");
-  fixed = fixed.replace(
-    /\(([^()]+)\)\^\((\d+)\/(\d+)\)/g,
-    "nthRoot(($1)^$2,$3)"
-  );
-  return fixed;
+    let fixed = input.replace(/(\d)([a-zA-Z])/g, "$1*$2");
+    fixed = fixed.replace(
+        /\(([^()]+)\)\^\((\d+)\/(\d+)\)/g,
+        "nthRoot(($1)^$2,$3)"
+    );
+    return fixed;
 }
 class FalsePositionMT extends Component {
 
@@ -25,6 +25,9 @@ class FalsePositionMT extends Component {
         let ErrorCheck = Number(error);
         let f;
         let mid;
+        let count = 0;
+        let Max_count = 10000;
+
         try { //เก็บ fn
             f = this.compileFn(fixed_fn);
         } catch (e) {
@@ -46,33 +49,52 @@ class FalsePositionMT extends Component {
             return;
         }
 
-        
 
-        let stepX = [left, right];
-        let stepFx = [f(left), f(right)];
-        console.log("TEST",f(left));
+        //first ite
+        
+        let stepX = [];
+        let stepFx = [];
+        let errorValue = ["N/A"];
+        let oldMid = 0;
+        mid = (left * f(right) - right * f(left)) / (f(right) - f(left));
+        if (f(left) * f(mid) < 0) {
+            right = mid;
+        } else {
+            left = mid;
+        }
+        oldMid = mid;
+        // console.log("TEST",f(left));
         while ((right - left) / 2 > ErrorCheck) {
 
             mid = (left * f(right) - right * f(left)) / (f(right) - f(left));
             console.log(f(mid));
             stepX.push(mid);
             stepFx.push(f(mid));
-
+            errorValue.push(Math.abs(mid - oldMid) / mid);
             if (f(mid) === 0) {
                 break;
             }
 
+
+            if (count > Max_count) {
+                errorMsg = "Exceeded maximum 10,000 iterations";
+                break;
+            }
             if (f(left) * f(mid) < 0) {
                 right = mid;
             } else {
                 left = mid;
             }
-            if (Math.abs(f(mid)) <= ErrorCheck) {
+
+            if (Math.abs((mid - oldMid) / mid) < ErrorCheck) {
+
                 break;
             }
-
+            
+            oldMid = mid;
+            count += 1;
         }
-        if (this.props.onResult) this.props.onResult({ root: stepX, fxRoot: stepFx, errorMsg })
+        if (this.props.onResult) this.props.onResult({ root: stepX, fxRoot: stepFx, ePer: errorValue, errorMsg })
 
     }
     render() {

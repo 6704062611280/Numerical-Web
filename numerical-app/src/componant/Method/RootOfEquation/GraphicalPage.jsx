@@ -7,6 +7,7 @@ import Plot from "react-plotly.js"; // ใช้ plot กราฟแบบ inte
 import ResultTable from "../../ResultTable"; // ไฟล์ CSS สำหรับตกแต่งหน้า
 import GraphicalMT from "./GraphicalMT"; // ไฟล์ที่มี logic คำนวณจริง
 import FormatLatex from "../../FormatLatex";
+import { evaluate } from "mathjs"; // ใช้คำนวณสมการ
 import "../../GlobalStyle.css"; // ดึง CSS รวมที่เราทำไว้ก่อนหน้า (nice-table)
 
 // -----------------------------
@@ -24,6 +25,7 @@ class GraphicalPage extends Component {
       errorMsg: "", // เก็บข้อความแจ้งเตือน error
       roots: [], // เก็บค่าราก (x) ที่หาได้
       fxRoots: [], // เก็บค่าฟังก์ชัน f(x) ของแต่ละราก
+      ePer: [], // เก็บค่าความคลาดเคลื่อนของแต่ละราก
     };
   }
 
@@ -32,23 +34,28 @@ class GraphicalPage extends Component {
   // -----------------------------
   formatToLaTeX = (equation) => {
     // เช่น x^(2) → x^{2}
-    return equation.replace(/\^\((.*?)\)/g, "^{\$1}");
+    return equation.replace(/\^\((.*?)\)/g, "^{$1}");
   };
 
   // -----------------------------
   // 🔹 ส่วนการแสดงผลหน้าจอ (render)
   // -----------------------------
   render() {
-    const { fn, a, b, error, roots, fxRoots, errorMsg } = this.state;
+    const { fn, a, b, error, roots, fxRoots, ePer,errorMsg } = this.state;
 
-    // สร้างข้อมูลเรียงตามค่า x สำหรับ plot กราฟ
+    // สร้างข้อมูลเรียงตามค่า x สำหรับแสดงจุดรากบนกราฟ
     const sortedData = roots
-      .map((val, i) => ({ x: val, y: fxRoots[i] })) // รวม x และ f(x) เป็น object
+      .map((val, i) => ({ 
+        x: val, 
+        y: fxRoots[i],
+        originalIndex: i // ✨ เก็บ index เดิมก่อน sort
+      }))
       .sort((a, b) => a.x - b.x); // เรียงจากน้อย → มาก
 
-    // แยกเป็นอาเรย์ของ x และ y เพื่อส่งให้ Plotly
+    // แยกเป็นอาเรย์ของ x และ y สำหรับจุดรากเท่านั้น
     const sortedX = sortedData.map((d) => d.x);
     const sortedY = sortedData.map((d) => d.y);
+    const lastRootIndex = roots.length - 1; // ✨ index ของรากตัวสุดท้าย (ก่อน sort)
 
     // -----------------------------
     // 🔹 ส่วนที่ return (HTML + Logic)
@@ -64,7 +71,7 @@ class GraphicalPage extends Component {
 
           <div>
             {/* แสดงสมการในรูปแบบ LaTeX */}
-            <FormatLatex fn={fn} />
+            <FormatLatex fn={fn} text="f(x)" />
 
             {/* -----------------------------
                 🔹 ส่วนกรอกข้อมูลอินพุต
@@ -121,9 +128,9 @@ class GraphicalPage extends Component {
                 a={a} // ค่าจุดเริ่มต้น
                 b={b} // ค่าจุดสิ้นสุด
                 error={error} // ค่าความคลาดเคลื่อน
-                onResult={({ roots, fxRoots, errorMsg }) =>
+                onResult={({ roots, fxRoots, ePer,errorMsg }) =>
                   // รับค่าผลลัพธ์จาก GraphicalMT และอัปเดต state
-                  this.setState({ roots, fxRoots, errorMsg })
+                  this.setState({ roots, fxRoots, ePer,errorMsg })
                 }
               >
                 {/* children function → รับ Calculate จาก GraphicalMT */}
@@ -142,32 +149,91 @@ class GraphicalPage extends Component {
                ----------------------------- */}
             <Plot
               data={[
+                // เส้น f(x) แบบต่อเนื่อง
                 {
-                  x: sortedX, // แกน X
-                  y: sortedY, // แกน Y
-                  type: "scatter", // ใช้เส้นเชื่อมต่อ
-                  mode: "lines+markers", // เส้น + จุด
-                  line: { color: "blue" }, // เส้นสีน้ำเงิน
-                  marker: { color: "red" }, // จุดสีแดง
+                  x: (() => {
+                    const p = root[root.length-1];
+                    const xVals = [];
+                    const start = parseFloat(a)-p;
+                    const end = parseFloat(b)+p;
+                    const step = (end - start) / 500; // สร้าง 500 จุดเพื่อเส้นต่อเนื่อง
+                    for (let i = start; i <= end; i += step) {
+                      xVals.push(i);
+                    }
+                    return xVals;
+                  })(),
+                  y: (() => {
+                    const p = root[root.length-1];
+                    const xVals = [];
+                    const start = parseFloat(a)-p;
+                    const end = parseFloat(b)+p;
+                    const step = (end - start) / 500;
+                    for (let i = start; i <= end; i += step) {
+                      xVals.push(i);
+                    }
+                    return xVals.map(x => {
+                      try {
+                        return evaluate(fn, { x });
+                      } catch {
+                        return null;
+                      }
+                    });
+                  })(),
+                  type: "scatter",
+                  mode: "lines",
+                  line: { color: "blue", width: 2 },
+                  name: "f(x)",
+                  hoverinfo: "skip", // ปิด hover tooltip
+                },
+                // จุดรากที่หาเจอ
+                {
+                  x: sortedX,
+                  y: sortedY,
+                  type: "scatter",
+                  mode: "markers",
+                  marker: { 
+                    color: sortedData.map((d) => d.originalIndex === lastRootIndex ? 'green' : 'red'), // เช็คจาก originalIndex
+                    size: sortedData.map((d) => d.originalIndex === lastRootIndex ? 20 : 10), // จุดสุดท้ายใหญ่กว่า
+                    symbol: "circle"
+                  },
+                  name: "รากของสมการ (f(x)=0)",
+                  hovertemplate: "x: %{x:.6f}<br>f(x): %{y:.6f}<extra></extra>",
+                },
+                // เส้นแกน y=0
+                {
+                  x: [parseFloat(a), parseFloat(b)],
+                  y: [0, 0],
+                  type: "scatter",
+                  mode: "lines",
+                  line: { color: "black", width: 1, dash: "dash" },
+                  name: "y = 0",
+                  hoverinfo: "skip",
                 },
               ]}
               layout={{
-                width: 1000, // ความกว้างกราฟ
-                height: 440, // ความสูงกราฟ
-                title: "กราฟแสดง f(x)", // ชื่อกราฟ
-                xaxis: { title: "แกน X" }, // ป้ายแกน X
-                yaxis: {
-                  title: "แกน Y", // ป้ายแกน Y
-                  autorange: true, // ให้ปรับช่วงอัตโนมัติ
-                  range: [0, null], // ค่าเริ่มต้นที่แกน y จาก 0
+                width: 1000,
+                height: 440,
+                title: "กราฟแสดง f(x) และจุดตัดแกน x",
+                xaxis: { title: "แกน X", zeroline: true },
+                yaxis: { 
+                  title: "แกน Y",
+                  zeroline: true,
                 },
+                showlegend: true,
+                legend: { x: 1, y: 1 },
+                dragmode: "pan", // เปิดใช้การลากกราฟเพื่อเลื่อนดู
+              }}
+              config={{
+                scrollZoom: true, // เปิดใช้ scroll mouse ซูม
+                displayModeBar: true, // แสดงแถบเครื่องมือ
+                displaylogo: false, // ซ่อนโลโก้ Plotly
               }}
             />
 
             {/* -----------------------------
                 🔹 ตารางแสดงผลลัพธ์การคำนวณ
                ----------------------------- */}
-            <ResultTable roots={roots} fxRoots={fxRoots}/>
+            <ResultTable roots={roots} fxRoots={fxRoots} ePer={ePer}/>
           </div>
         </div>
       </div>

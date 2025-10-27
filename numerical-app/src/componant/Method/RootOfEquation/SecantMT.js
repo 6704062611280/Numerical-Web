@@ -18,7 +18,7 @@ class SecantMT extends Component {
         const { fn, x0, x1, error } = this.props;
 
         const safeFn = convertPowerToNthRoot(fn);
-        
+
         let node, compiled, fPrimeNode, fPrimeCompiled;
 
         try {
@@ -29,7 +29,7 @@ class SecantMT extends Component {
         } catch (e) {
             const errorMsg = "Error: Invalid function";
             if (this.props.onResult)
-                this.props.onResult({ xRoot: [], errorPer: [], errorMsg });
+                this.props.onResult({ xRoot: xNew_Array, fxRoot: fRoot_Array, ePer: ePer_Array, lineX: newX, lineY: newY, errorMsg });
             return;
         }
 
@@ -44,7 +44,7 @@ class SecantMT extends Component {
         if (isNaN(xStart) || isNaN(ErrorCheck)) {
             errorMsg = "กรุณาใส่ค่าเริ่มต้นและค่า Error ให้ถูกต้อง";
             if (this.props.onResult)
-                this.props.onResult({ xRoot: [], errorPer: [], errorMsg });
+                this.props.onResult({ xRoot: xNew_Array, fxRoot: fRoot_Array, ePer: ePer_Array, lineX: newX, lineY: newY, errorMsg });
             return;
         }
 
@@ -56,6 +56,7 @@ class SecantMT extends Component {
         let ePer = Math.abs((xNew - xStart) / xNew);
 
         const xNew_Array = [xNew];
+        const fRoot_Array = [f(xNew)];
         const ePer_Array = [ePer];
 
         while (ePer >= ErrorCheck && count < Max_count) {
@@ -64,20 +65,33 @@ class SecantMT extends Component {
                 errorMsg = "Error: Division by zero";
                 break;
             }
-            
+
             xNew = xNext - f(xNext) * (xNext - xStart) / denominator;
             xStart = xNew;
             xNew = xNew = xNext - f(xNext) * (xNext - xStart) / (f(xNext) - f(xStart));
             ePer = Math.abs((xNew - xStart) / xNew);
-
+            fRoot_Array.push(f(xNew));
             xNew_Array.push(xNew);
             ePer_Array.push(ePer);
 
             count += 1;
         }
 
+        const newX = [];
+        const newY = [];
+        for (let i = 0; i < xNew_Array.length - 1; i++) {
+            newX.push([xNew_Array[i], xNew_Array[i + 1]]);
+            newY.push([fRoot_Array[i], 0]);
+            console.log("start =", xNew_Array[i], fRoot_Array[i]);
+            console.log("end =", xNew_Array[i + 1], 0);
+        }
+
+
+
+
+
         if (this.props.onResult)
-            this.props.onResult({ xRoot: xNew_Array, errorPer: ePer_Array, errorMsg });
+            this.props.onResult({ xRoot: xNew_Array, fxRoot: fRoot_Array, ePer: ePer_Array, lineX: newX, lineY: newY, errorMsg });
     };
 
     render() {
